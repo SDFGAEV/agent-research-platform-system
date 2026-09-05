@@ -1,6 +1,12 @@
 from .contracts import LogBatch, LogLevel, LogRecord
 from .binding import LoggingSystemBinding
-from .ports import ExceptionDescriptorPort, LogWriterPort, LoggingSystemPort
+from .ports import (
+    ExceptionDescriptorPort,
+    LogWriterPort,
+    LoggingSystemPort,
+    ObservationBindingPort,
+    ObservationFactoryPort,
+)
 
 __all__ = [
     "ExceptionDescriptorPort",
@@ -10,4 +16,6 @@ __all__ = [
     "LogRecord",
     "LogWriterPort",
     "LoggingSystemPort",
+    "ObservationBindingPort",
+    "ObservationFactoryPort",
 ]

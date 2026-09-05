@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from ..runtime.system import SystemObservationFactory
-
 from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
     BindingPlan,
     CapabilityOffer,
 )
 
-from .ports import LoggingSystemPort
+from .ports import LoggingSystemPort, ObservationFactoryPort
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,7 +16,7 @@ class LoggingSystemBinding:
     logging: LoggingSystemPort
     plan: BindingPlan
     offer: CapabilityOffer
-    observations: "SystemObservationFactory | None" = None
+    observations: ObservationFactoryPort | None = None
 
 
 __all__ = ["LoggingSystemBinding"]

@@ -4,7 +4,10 @@ from pathlib import Path
 import os
 
 from noetrium_platform.foundation.governance.api import RepositorySourceIndexPort
-from noetrium_platform.foundation.governance.providers import GitRepositorySourceTree
+from noetrium_platform.foundation.governance.providers import (
+    GitRepositorySourceTree,
+    RepositorySourceTree,
+)
 
 from ..report import (
     ArchitectureMigrationApprovalSet,
@@ -25,9 +28,10 @@ def build_architecture_report(
     """Compose the architecture analyzer with exactly one immutable repository source cut."""
 
     root = Path(root).resolve()
-    resolved_index = source_index or GitRepositorySourceTree(
-        root, git_executable=git_executable
-    ).index()
+    # Repository gates must inspect the exact working tree being evaluated.
+    # Git-backed snapshots remain available through the explicit source_index/
+    # historical path, but a default gate must never validate stale HEAD bytes.
+    resolved_index = source_index or RepositorySourceTree(root).index()
     if migration_approval_set is None:
         approval_path = os.environ.get("NOETRIUM_ARCHITECTURE_MIGRATION_APPROVALS", "").strip()
         approval_sha = os.environ.get("NOETRIUM_ARCHITECTURE_MIGRATION_APPROVALS_SHA256", "").strip()

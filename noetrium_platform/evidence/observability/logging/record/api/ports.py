@@ -4,8 +4,8 @@ from collections.abc import Mapping
 from typing import Protocol
 
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor, SystemIdentity
+from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
 
 from .contracts import LogLevel, LogRecord
 
@@ -71,6 +71,30 @@ class LogWriterPort(Protocol):
         attributes: Mapping[str, JsonValue] | None = None,
         correlation_refs: tuple[str, ...] = (),
     ) -> str: ...
+
+
+class ObservationBindingPort(Protocol):
+    """Minimal topology-bound observation surface exposed by composition."""
+
+    descriptor: SystemDescriptor
+    address: DiagnosticAddress
+    logger: LogWriterPort
+    metrics: object
+    topology_generation: int
+    topology_digest: str
+
+
+class ObservationFactoryPort(Protocol):
+    """Composition-owned observation factory without an API/runtime edge."""
+
+    def bind_all(
+        self,
+        *,
+        scope: ScopeIdentity = PLATFORM_SCOPE,
+        trace_id: str | None = None,
+    ) -> tuple[ObservationBindingPort, ...]: ...
+
+    def bindings(self) -> tuple[ObservationBindingPort, ...]: ...
 
 
 class LoggingSystemPort(Protocol):

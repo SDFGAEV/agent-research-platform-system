@@ -8267,8 +8267,8 @@
     },
     {
       "path": "noetrium_platform/foundation/portfolio/providers/__init__.py",
-      "sha256": "a5077728713d4828555cc665b4375ed3b102de2bfb61c7de907004a673fbfbab",
-      "size": 80
+      "sha256": "e92fddbe95cb634a4f4bf5cbdd11e2c52297f4e7b4673cc3be57a1fc659721ce",
+      "size": 79
     },
     {
       "path": "noetrium_platform/foundation/portfolio/runtime/__init__.py",
@@ -15579,5 +15579,5 @@
   "platform_code_version": "0.44.0",
   "python_requires": ">=3.11",
   "schema_version": 1,
-  "source_tree_sha256": "eaaa26e77862b65ef27369c2dda7ed028f8aebecd17338984efba6ba4f7fc7d9"
+  "source_tree_sha256": "25dab9bfc4a356d521a305faac3e6b7b507a546eaa8c69c025b0fe5dbf42158c"
 }

@@ -7,8 +7,7 @@ from .registry import InMemorySystemRegistry
 
 def build_default_system_registry() -> InMemorySystemRegistry:
     registry = InMemorySystemRegistry()
-    for descriptor in system_catalog():
-        registry.register(descriptor)
+    registry.register_many(system_catalog())
     return registry
 
 

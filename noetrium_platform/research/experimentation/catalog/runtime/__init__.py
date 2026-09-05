@@ -1,3 +1,13 @@
-from .catalog import ExperimentationCatalogConflict, ExperimentationCatalogNotFound, InMemoryExperimentationCatalog
+from .catalog import (
+    ExperimentationCatalogConflict,
+    ExperimentationCatalogNotFound,
+    InMemoryExperimentationCatalog,
+    SQLiteExperimentationCatalog,
+)
 
-__all__ = ["ExperimentationCatalogConflict", "ExperimentationCatalogNotFound", "InMemoryExperimentationCatalog"]
+__all__ = [
+    "ExperimentationCatalogConflict",
+    "ExperimentationCatalogNotFound",
+    "InMemoryExperimentationCatalog",
+    "SQLiteExperimentationCatalog",
+]

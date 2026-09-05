@@ -11,7 +11,10 @@ from noetrium_platform.evidence.artifact.catalog.providers import SQLiteArtifact
 from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegistry
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
-from noetrium_platform.research.experimentation.catalog.runtime import InMemoryExperimentationCatalog
+from noetrium_platform.research.experimentation.catalog.runtime import (
+    InMemoryExperimentationCatalog,
+    SQLiteExperimentationCatalog,
+)
 from noetrium_platform.foundation.governance.evolution.api import SystemEvolutionPort
 from noetrium_platform.foundation.governance.evolution.providers import SQLiteEvolutionStore
 from noetrium_platform.foundation.governance.evolution.runtime import RegistryDrivenEvolutionController
@@ -33,11 +36,19 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_connection impo
     durable_sqlite_connection,
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import AtomicEndpointAllocator, InMemoryEndpointAllocator
-from noetrium_platform.infrastructure.resources.compute.runtime import InMemoryComputeInventory, InMemoryComputeScheduler
+from noetrium_platform.infrastructure.resources.compute.runtime import (
+    InMemoryComputeInventory,
+    InMemoryComputeScheduler,
+    SQLiteComputeInventory,
+    SQLiteComputeScheduler,
+)
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePort, ResourceOwnershipPort
 from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
-from noetrium_platform.capabilities.environment.catalog.runtime import ExecutionEnvironmentCatalog
+from noetrium_platform.capabilities.environment.catalog.runtime import (
+    ExecutionEnvironmentCatalog,
+    SQLiteExecutionEnvironmentCatalog,
+)
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
 from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry
 from noetrium_platform.foundation.scope.providers import SQLiteScopeRegistry
@@ -114,20 +125,22 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
         connection_factory=durable_sqlite_connection,
     )
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
+    experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
     resources = SQLiteResourceLeaseRegistry(database)
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(database),
         probe=SocketEndpointProbe(),
     )
-    compute_inventory = InMemoryComputeInventory()
+    compute_inventory = SQLiteComputeInventory(database)
+    compute_scheduler = SQLiteComputeScheduler(database, compute_inventory)
     return PlatformMetaAuthorities(
         systems=systems,
         evolution=evolution,
         scopes=scopes,
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
         portfolio=SQLitePortfolioCatalog(database, scopes),
-        experimentation=InMemoryExperimentationCatalog(scopes),
-        environments=ExecutionEnvironmentCatalog(scopes),
+        experimentation=experimentation,
+        environments=SQLiteExecutionEnvironmentCatalog(root / "platform-environments.sqlite", scopes),
         artifacts=SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
         datasets=cast(
             DatasetRegistryPort,
@@ -139,7 +152,7 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
         compute_inventory=compute_inventory,
-        compute_scheduler=InMemoryComputeScheduler(compute_inventory),
+        compute_scheduler=compute_scheduler,
     )
 
 

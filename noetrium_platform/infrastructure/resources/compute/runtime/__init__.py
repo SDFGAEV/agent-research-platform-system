@@ -1,3 +1,8 @@
-from .inventory import InMemoryComputeInventory
-from .scheduler import InMemoryComputeScheduler
-__all__ = ["InMemoryComputeInventory", "InMemoryComputeScheduler"]
+from .inventory import InMemoryComputeInventory, SQLiteComputeInventory
+from .scheduler import InMemoryComputeScheduler, SQLiteComputeScheduler
+__all__ = [
+    "InMemoryComputeInventory",
+    "InMemoryComputeScheduler",
+    "SQLiteComputeInventory",
+    "SQLiteComputeScheduler",
+]

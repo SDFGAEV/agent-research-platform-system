@@ -42,6 +42,7 @@ def compose_test_logging(
     store: InMemoryLogStore,
     *,
     exception_descriptor: ExceptionDescriptorBinding | None = None,
+    metrics=None,
 ):
     meta = build_in_memory_platform_meta()
     return compose_logging_system(
@@ -58,6 +59,7 @@ def compose_test_logging(
         exception_descriptor=exception_descriptor,
         planner=meta.capability_composition,
         systems=meta.systems,
+        metrics=metrics,
     )
 
 
@@ -84,6 +86,19 @@ def test_logging_system_binds_internal_writer_and_unified_query() -> None:
     assert len(rows) == 1
     assert rows[0].failure_refs == ("failure-1",)
     assert dict(rows[0].attributes) == {}
+
+
+class _MetricSink:
+    def observe(self, context, name: str, value: float, **dimensions: str) -> object:
+        del context, name, value, dimensions
+        return None
+
+
+def test_logging_composition_activates_registry_observations_when_metrics_are_bound() -> None:
+    store = InMemoryLogStore()
+    composition = compose_test_logging(store, metrics=_MetricSink())
+    assert composition.observations is not None
+    assert len(composition.observations.bindings()) > 0
 
 
 def test_exception_policy_is_injected_at_logging_composition() -> None:

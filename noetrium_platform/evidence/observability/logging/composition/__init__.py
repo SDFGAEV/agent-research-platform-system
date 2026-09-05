@@ -14,8 +14,12 @@ from noetrium_platform.evidence.observability.logging.record.api import (
 from noetrium_platform.evidence.observability.logging.record.providers.exception_descriptor import (
     KernelExceptionDescriptor,
 )
-from noetrium_platform.evidence.observability.logging.record.runtime import StructuredLoggingSystem
+from noetrium_platform.evidence.observability.logging.record.runtime import (
+    StructuredLoggingSystem,
+    SystemObservationFactory,
+)
 from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPort
+from noetrium_platform.evidence.observability.api import ContextMetricSink
 from noetrium_platform.foundation.governance.architecture.api.capabilities import (
     EXCEPTION_DESCRIPTOR_V1,
     LOG_QUERY_V1,
@@ -83,6 +87,7 @@ def compose_logging_system(
     scope: ScopeIdentity = PLATFORM_SCOPE,
     exception_descriptor: ExceptionDescriptorBinding | None = None,
     parent_plan_digest: str | None = None,
+    metrics: ContextMetricSink | None = None,
 ) -> LoggingSystemBinding:
     """Compose logging without a container or a hidden default runtime dependency.
 
@@ -181,15 +186,21 @@ def compose_logging_system(
             ),
         ),
     )
+    logging_system = StructuredLoggingSystem(
+        sink.sink,
+        query.query,
+        systems=systems,
+        exception_descriptor=descriptor_binding.descriptor,
+    )
+    observations = None
+    if metrics is not None:
+        observations = SystemObservationFactory(systems, logging_system, metrics)
+        observations.bind_all(scope=scope)
     return LoggingSystemBinding(
-        logging=StructuredLoggingSystem(
-            sink.sink,
-            query.query,
-            systems=systems,
-            exception_descriptor=descriptor_binding.descriptor,
-        ),
+        logging=logging_system,
         plan=plan,
         offer=logging_offer,
+        observations=observations,
     )
 
 

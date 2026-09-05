@@ -9,6 +9,8 @@ from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegistry
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
 from noetrium_platform.research.experimentation.catalog.runtime import InMemoryExperimentationCatalog
+from noetrium_platform.foundation.governance.evolution.api import SystemEvolutionPort
+from noetrium_platform.foundation.governance.evolution.runtime import RegistryDrivenEvolutionController
 from noetrium_platform.foundation.governance.system_registry.api import SystemRegistryPort
 from noetrium_platform.foundation.governance.system_registry.runtime import build_default_system_registry
 from noetrium_platform.foundation.portfolio.api import PortfolioCatalogPort
@@ -39,6 +41,7 @@ class PlatformMetaAuthorities:
     """Behavior-free bundle used only by composition roots and top-level management surfaces."""
 
     systems: SystemRegistryPort
+    evolution: SystemEvolutionPort
     scopes: ScopeRegistryPort
     capability_composition: CapabilityCompositionPlanner
     portfolio: PortfolioCatalogPort
@@ -56,6 +59,7 @@ class PlatformMetaAuthorities:
 def build_in_memory_platform_meta() -> PlatformMetaAuthorities:
     scopes = InMemoryScopeRegistry()
     systems = build_default_system_registry()
+    evolution = RegistryDrivenEvolutionController(systems)
     resources = InMemoryResourceLeaseRegistry()
     compute_inventory = InMemoryComputeInventory()
     endpoint_allocations = InMemoryEndpointAllocator(
@@ -65,6 +69,7 @@ def build_in_memory_platform_meta() -> PlatformMetaAuthorities:
     )
     return PlatformMetaAuthorities(
         systems=systems,
+        evolution=evolution,
         scopes=scopes,
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
         portfolio=InMemoryPortfolioCatalog(scopes),
@@ -94,6 +99,7 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
     database = root / "platform-meta.sqlite"
     scopes = SQLiteScopeRegistry(database)
     systems = build_default_system_registry()
+    evolution = RegistryDrivenEvolutionController(systems)
     resources = SQLiteResourceLeaseRegistry(database)
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(database),
@@ -102,6 +108,7 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
     compute_inventory = InMemoryComputeInventory()
     return PlatformMetaAuthorities(
         systems=systems,
+        evolution=evolution,
         scopes=scopes,
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
         portfolio=InMemoryPortfolioCatalog(scopes),

@@ -11,8 +11,8 @@ from noetrium_platform.evidence.observability.telemetry.metric.api import (
     MetricDefinition,
     MetricKind,
 )
-from noetrium_platform.evidence.observability.telemetry.metric.runtime import (
-    MetricRegistry,
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import MetricRegistry
+from noetrium_platform.evidence.observability.logging.record.runtime import (
     SystemBoundMetricSink,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
@@ -90,7 +90,7 @@ class _Logging:
 
 
 def test_observation_factory_binds_the_complete_registered_topology() -> None:
-    from noetrium_platform.composition.system_observation import (
+    from noetrium_platform.evidence.observability.logging.record.runtime import (
         SystemObservationFactory,
     )
 

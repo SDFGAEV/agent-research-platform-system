@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from contextlib import contextmanager
 import sqlite3
 from pathlib import Path
-from threading import RLock
 from typing import Protocol
 
 from noetrium.contracts.json import canonical_text, strict_json_loads
@@ -33,14 +33,10 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock = RLock()
-        self._connection = sqlite3.connect(
-            str(self.path), check_same_thread=False, isolation_level=None,
-        )
-        with self._lock:
-            self._connection.execute("PRAGMA journal_mode=WAL")
-            self._connection.execute("PRAGMA synchronous=FULL")
-            self._connection.execute(
+        with self._connection() as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA synchronous=FULL")
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS memory_items (
                     plane TEXT NOT NULL,
@@ -56,6 +52,18 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
                 """
             )
 
+    @contextmanager
+    def _connection(self):
+        connection = sqlite3.connect(
+            str(self.path), timeout=30.0, isolation_level=None
+        )
+        try:
+            connection.execute("PRAGMA busy_timeout=30000")
+            connection.execute("PRAGMA synchronous=FULL")
+            yield connection
+        finally:
+            connection.close()
+
     @staticmethod
     def _row(item: MemoryItem) -> tuple[object, ...]:
         return (
@@ -68,8 +76,8 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
     def load(self, plane: str) -> tuple[MemoryItem, ...]:
         if type(plane) is not str or not plane.strip():
             raise ValueError("memory persistence plane must be non-empty")
-        with self._lock:
-            rows = self._connection.execute(
+        with self._connection() as connection:
+            rows = connection.execute(
                 "SELECT namespace, memory_id, item_digest, content, tags_json, embedding_json, metadata_json "
                 "FROM memory_items WHERE plane = ? ORDER BY namespace, memory_id",
                 (plane,),
@@ -96,8 +104,8 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
             raise ValueError("memory persistence plane must be non-empty")
         if type(item) is not MemoryItem:
             raise TypeError("memory persistence item must be MemoryItem")
-        with self._lock:
-            self._connection.execute(
+        with self._connection() as connection:
+            connection.execute(
                 "INSERT INTO memory_items "
                 "(plane, namespace, memory_id, item_digest, content, tags_json, embedding_json, metadata_json) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
@@ -116,24 +124,24 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
         keys = [(item.namespace, item.memory_id) for item in items]
         if len(keys) != len(set(keys)):
             raise ValueError("memory persistence contains duplicate identities")
-        with self._lock:
-            self._connection.execute("BEGIN IMMEDIATE")
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
             try:
-                self._connection.execute("DELETE FROM memory_items WHERE plane = ?", (plane,))
-                self._connection.executemany(
+                connection.execute("DELETE FROM memory_items WHERE plane = ?", (plane,))
+                connection.executemany(
                     "INSERT INTO memory_items "
                     "(plane, namespace, memory_id, item_digest, content, tags_json, embedding_json, metadata_json) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                     tuple((plane, *self._row(item)) for item in items),
                 )
-                self._connection.execute("COMMIT")
+                connection.execute("COMMIT")
             except BaseException:
-                self._connection.execute("ROLLBACK")
+                connection.execute("ROLLBACK")
                 raise
 
     def close(self) -> None:
-        with self._lock:
-            self._connection.close()
+        """Retained as a lifecycle no-op; connections are scoped per operation."""
+        return None
 
 
 __all__ = ["MemoryPersistencePort", "SQLiteMemoryPersistence"]

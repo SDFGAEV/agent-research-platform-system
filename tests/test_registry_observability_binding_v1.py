@@ -154,3 +154,38 @@ def test_observation_factory_rebinds_when_registry_grows() -> None:
         )
     )
     assert len(logging.addresses) == logging_count
+
+
+def test_registry_batches_topology_notifications() -> None:
+    systems = build_default_system_registry()
+    events: list[tuple[tuple[str, ...], int, str]] = []
+    systems.subscribe(
+        lambda descriptors, generation, digest: events.append(
+            (tuple(item.identity.key for item in descriptors), generation, digest)
+        )
+    )
+    descriptors = tuple(
+        SystemDescriptor(
+            identity=SystemIdentity("governance", (name,)),
+            layer=SystemLayer.GOVERNANCE,
+            package_prefix=f"noetrium_platform.foundation.governance.{name}",
+            authorities=(AuthorityDescriptor(f"{name}_authority"),),
+            owns="batch notification test node",
+            must_not_own="business behavior",
+        )
+        for name in ("batch_a", "batch_b")
+    )
+
+    registered = systems.register_many(descriptors)
+
+    assert tuple(item.identity.key for item in registered) == (
+        "governance/batch_a",
+        "governance/batch_b",
+    )
+    assert len(events) == 1
+    assert events[0][0] == (
+        "governance/batch_a",
+        "governance/batch_b",
+    )
+    assert events[0][1] == systems.generation
+    assert events[0][2] == systems.topology_digest

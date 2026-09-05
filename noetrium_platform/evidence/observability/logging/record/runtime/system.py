@@ -172,7 +172,7 @@ class SystemObservationFactory:
 
     def _on_topology_change(
         self,
-        _descriptor: SystemDescriptor,
+        _descriptors: tuple[SystemDescriptor, ...],
         _generation: int,
         _digest: str,
     ) -> None:

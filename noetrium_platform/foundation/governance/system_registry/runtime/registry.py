@@ -51,28 +51,54 @@ class InMemorySystemRegistry:
         return self._topology_digest
 
     def register(self, descriptor: SystemDescriptor) -> None:
-        key = descriptor.identity.key
-        current = self._items.get(key)
-        if current is not None:
-            if current != descriptor:
-                raise SystemRegistryConflict(key)
-            return
+        self.register_many((descriptor,))
 
-        parent = descriptor.parent_key
-        if parent is not None and parent not in self._items:
-            raise SystemRegistryNotFound(parent)
+    def register_many(
+        self,
+        descriptors: tuple[SystemDescriptor, ...],
+    ) -> tuple[SystemDescriptor, ...]:
+        if not isinstance(descriptors, tuple):
+            raise TypeError("descriptors must be a tuple")
 
-        self._items[key] = descriptor
-        if parent is not None:
-            self._children.setdefault(parent, set()).add(key)
-        self._children.setdefault(key, set())
-        self._generation += 1
+        pending: dict[str, SystemDescriptor] = {}
+        for descriptor in descriptors:
+            key = descriptor.identity.key
+            current = self._items.get(key) or pending.get(key)
+            if current is not None:
+                if current != descriptor:
+                    raise SystemRegistryConflict(key)
+                continue
+            pending[key] = descriptor
+
+        ordered = tuple(
+            sorted(
+                pending.values(),
+                key=lambda item: (item.identity.depth, item.identity.key),
+            )
+        )
+        for descriptor in ordered:
+            parent = descriptor.parent_key
+            if parent is not None and parent not in self._items and parent not in pending:
+                raise SystemRegistryNotFound(parent)
+
+        for descriptor in ordered:
+            key = descriptor.identity.key
+            parent = descriptor.parent_key
+            self._items[key] = descriptor
+            if parent is not None:
+                self._children.setdefault(parent, set()).add(key)
+            self._children.setdefault(key, set())
+            self._generation += 1
+
+        if not ordered:
+            return ()
+
         self._topology_digest = None
         digest = self.topology_digest
         failures: list[BaseException] = []
         for observer in tuple(self._observers):
             try:
-                observer(descriptor, self._generation, digest)
+                observer(ordered, self._generation, digest)
             except BaseException as exc:
                 failures.append(exc)
         if failures:
@@ -80,6 +106,7 @@ class InMemorySystemRegistry:
                 "system registry observer notification failed",
                 tuple(failures),
             )
+        return ordered
 
     def subscribe(self, observer: SystemRegistryObserver) -> Callable[[], None]:
         if observer not in self._observers:

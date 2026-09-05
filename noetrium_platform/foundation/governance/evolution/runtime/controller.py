@@ -103,6 +103,8 @@ class RegistryDrivenEvolutionController:
         already: list[str] = []
         rejected: list[str] = []
         incoming: dict[str, SystemDescriptor] = {}
+        to_register: list[SystemDescriptor] = []
+        pending_keys: set[str] = set()
 
         for descriptor in sorted(descriptors, key=lambda item: item.identity.depth):
             key = descriptor.identity.key
@@ -118,12 +120,18 @@ class RegistryDrivenEvolutionController:
                 continue
             parent = descriptor.parent_key
             if parent is not None and not (
-                self._systems.contains(parent) or parent in incoming
+                self._systems.contains(parent) or parent in pending_keys
             ):
                 rejected.append(f"{key}:unknown-parent:{parent}")
                 continue
-            self._systems.register(descriptor)
-            registered.append(key)
+            to_register.append(descriptor)
+            pending_keys.add(key)
+
+        if to_register:
+            registered.extend(
+                descriptor.identity.key
+                for descriptor in self._systems.register_many(tuple(to_register))
+            )
 
         report = DiscoveryReport(
             source_id=source_id,

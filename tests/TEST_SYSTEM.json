@@ -166,7 +166,7 @@
     },
     {
       "id": "section42-scientific",
-      "pattern": "^test_(?:benchmark_source|universal_experiment|measurement_protocol|research_compiler|research_workbench|trial_matrix_executor)_",
+      "pattern": "^test_(?:benchmark_source|raw_record_metric_engine|universal_experiment|measurement_protocol|research_compiler|research_workbench|trial_matrix_executor)_",
       "family": "scientific-domain"
     },
     {

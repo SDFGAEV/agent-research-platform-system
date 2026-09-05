@@ -484,11 +484,285 @@ class ExperimentUnitExecutorPort(Protocol):
     def execute_unit(self, unit: ExperimentUnit, run_id: str, sink: ObservationSinkPort) -> UnitOutcome:
         ...
 
+class RawRecordStorePort(Protocol):
+    """Append-only sink for lossless events, independent of observations."""
+
+    def append_raw_record(self, record: "RawRecord") -> None:
+        ...
+
+    def raw_snapshot(self) -> tuple["RawRecord", ...]:
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class RawRecord:
+    """Immutable, lossless event envelope plus re-buildable projections.
+
+    raw_payload is the exact source byte sequence. It is never decoded,
+    normalized, redacted, truncated, or replaced by payload. The envelope
+    captures identity, causality, clock quality, producer, outcome and
+    provenance; dimensions is an extensible namespace for usage, timing,
+    resource, cost, model, artifact, environment, quality and custom facts.
+    """
+
+    experiment_id: str
+    run_id: str
+    unit_id: str
+    sequence: int
+    occurred_at: str
+    recorded_at: str
+    producer_id: str
+    schema_id: str
+    record_type: str
+    raw_payload: bytes
+    payload: JsonValue
+    stream_id: str = ""
+    attempt_id: str = ""
+    parent_record_digests: tuple[str, ...] = ()
+    causation_id: str | None = None
+    correlation_id: str = ""
+    trace_id: str | None = None
+    span_id: str | None = None
+    event_name: str = ""
+    operation_id: str = ""
+    status: str = "unknown"
+    outcome: str | None = None
+    monotonic_ns: int | None = None
+    clock_source: str = "wall"
+    clock_uncertainty_ns: int | None = None
+    producer_version: str = "unknown"
+    producer_instance_id: str = ""
+    dimensions: JsonValue = field(default_factory=dict)
+    source_location: JsonValue = field(default_factory=dict)
+    privacy: JsonValue = field(default_factory=dict)
+    sampled: bool = True
+    sampling_rate: float = 1.0
+    content_type: str = "application/octet-stream"
+    content_encoding: str = "identity"
+    lineage_digests: tuple[str, ...] = ()
+    raw_payload_digest: str = field(init=False)
+    record_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        defaults = {
+            "stream_id": self.run_id + ":" + self.unit_id,
+            "attempt_id": "attempt-0",
+            "correlation_id": self.run_id,
+            "event_name": self.record_type,
+            "operation_id": self.record_type,
+            "producer_instance_id": self.producer_id,
+        }
+        for name, value in defaults.items():
+            if not getattr(self, name):
+                object.__setattr__(self, name, value)
+        for name, value in (
+            ("experiment_id", self.experiment_id), ("run_id", self.run_id),
+            ("unit_id", self.unit_id), ("stream_id", self.stream_id),
+            ("attempt_id", self.attempt_id), ("occurred_at", self.occurred_at),
+            ("recorded_at", self.recorded_at), ("producer_id", self.producer_id),
+            ("producer_version", self.producer_version),
+            ("producer_instance_id", self.producer_instance_id),
+            ("schema_id", self.schema_id), ("record_type", self.record_type),
+            ("clock_source", self.clock_source), ("content_type", self.content_type),
+            ("content_encoding", self.content_encoding), ("event_name", self.event_name),
+            ("operation_id", self.operation_id), ("status", self.status),
+        ):
+            _text(value, f"raw record {name}")
+        for name, value in (
+            ("causation_id", self.causation_id), ("correlation_id", self.correlation_id),
+            ("trace_id", self.trace_id), ("span_id", self.span_id),
+            ("outcome", self.outcome),
+        ):
+            if value is not None:
+                _text(value, f"raw record {name}")
+        if type(self.raw_payload) is not bytes:
+            raise TypeError("raw record raw_payload must be exact bytes")
+        if type(self.sequence) is not int or self.sequence < 0:
+            raise ValueError("raw record sequence must be non-negative")
+        for name, value in (
+            ("monotonic_ns", self.monotonic_ns),
+            ("clock_uncertainty_ns", self.clock_uncertainty_ns),
+        ):
+            if value is not None and (type(value) is not int or value < 0):
+                raise ValueError(f"raw record {name} must be non-negative when provided")
+        if type(self.sampled) is not bool:
+            raise TypeError("raw record sampled must be boolean")
+        if type(self.sampling_rate) not in (int, float) or not 0.0 < float(self.sampling_rate) <= 1.0:
+            raise ValueError("raw record sampling_rate must be in (0, 1]")
+        _digests(self.parent_record_digests, "raw record parent_record_digests")
+        _digests(self.lineage_digests, "raw record lineage_digests")
+        frozen_payload = freeze_json(self.payload)
+        frozen_dimensions = freeze_json(self.dimensions)
+        frozen_source = freeze_json(self.source_location)
+        frozen_privacy = freeze_json(self.privacy)
+        for name, value in (
+            ("dimensions", frozen_dimensions), ("source_location", frozen_source),
+            ("privacy", frozen_privacy),
+        ):
+            if not isinstance(value, Mapping):
+                raise TypeError(f"raw record {name} must be a mapping")
+        object.__setattr__(self, "payload", frozen_payload)
+        object.__setattr__(self, "dimensions", frozen_dimensions)
+        object.__setattr__(self, "source_location", frozen_source)
+        object.__setattr__(self, "privacy", frozen_privacy)
+        raw_digest = canonical_digest({"raw_payload_hex": self.raw_payload.hex()})
+        object.__setattr__(self, "raw_payload_digest", raw_digest)
+        object.__setattr__(self, "record_digest", canonical_digest({
+            "experiment_id": self.experiment_id, "run_id": self.run_id,
+            "unit_id": self.unit_id, "sequence": self.sequence,
+            "stream_id": self.stream_id, "attempt_id": self.attempt_id,
+            "parent_record_digests": self.parent_record_digests,
+            "causation_id": self.causation_id, "correlation_id": self.correlation_id,
+            "trace_id": self.trace_id, "span_id": self.span_id,
+            "occurred_at": self.occurred_at, "recorded_at": self.recorded_at,
+            "monotonic_ns": self.monotonic_ns, "clock_source": self.clock_source,
+            "clock_uncertainty_ns": self.clock_uncertainty_ns,
+            "producer_id": self.producer_id, "producer_version": self.producer_version,
+            "producer_instance_id": self.producer_instance_id,
+            "schema_id": self.schema_id, "record_type": self.record_type,
+            "event_name": self.event_name, "operation_id": self.operation_id,
+            "status": self.status, "outcome": self.outcome,
+            "raw_payload_digest": raw_digest, "payload": frozen_payload,
+            "dimensions": frozen_dimensions, "source_location": frozen_source,
+            "privacy": frozen_privacy, "sampled": self.sampled,
+            "sampling_rate": float(self.sampling_rate),
+            "content_type": self.content_type, "content_encoding": self.content_encoding,
+            "lineage_digests": self.lineage_digests,
+        }))
+
+
+class MetricAggregation(StrEnum):
+    COUNT = "count"
+    SUM = "sum"
+    MEAN = "mean"
+    MIN = "min"
+    MAX = "max"
+    STDDEV = "stddev"
+    P50 = "p50"
+    P95 = "p95"
+    FIRST = "first"
+    LAST = "last"
+    DISTINCT_COUNT = "distinct_count"
+
+
+class MetricMissingPolicy(StrEnum):
+    SKIP = "skip"
+    ZERO = "zero"
+    FAIL = "fail"
+
+
+@dataclass(frozen=True, slots=True)
+class MetricPredicate:
+    path: tuple[str, ...]
+    equals: JsonValue
+    predicate_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _strings(self.path, "metric predicate path")
+        frozen = freeze_json(self.equals)
+        object.__setattr__(self, "equals", frozen)
+        object.__setattr__(self, "predicate_digest", canonical_digest({
+            "path": self.path, "equals": frozen,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
+class MetricDefinition:
+    metric_id: str
+    aggregation: MetricAggregation
+    record_types: tuple[str, ...] = ()
+    schema_ids: tuple[str, ...] = ()
+    value_path: tuple[str, ...] = ()
+    group_by: tuple[tuple[str, ...], ...] = ()
+    predicates: tuple[MetricPredicate, ...] = ()
+    missing: MetricMissingPolicy = MetricMissingPolicy.SKIP
+    unit: str | None = None
+    description: str = ""
+    definition_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.metric_id, "metric definition metric_id")
+        if not isinstance(self.aggregation, MetricAggregation):
+            raise TypeError("metric definition aggregation must be MetricAggregation")
+        if type(self.record_types) is not tuple or any(type(item) is not str or not item.strip() for item in self.record_types):
+            raise TypeError("metric definition record_types must contain strings")
+        if type(self.schema_ids) is not tuple or any(type(item) is not str or not item.strip() for item in self.schema_ids):
+            raise TypeError("metric definition schema_ids must contain strings")
+        _strings(self.value_path, "metric definition value_path")
+        if self.aggregation is not MetricAggregation.COUNT and not self.value_path:
+            raise ValueError("non-count metric requires value_path")
+        if type(self.group_by) is not tuple or any(type(path) is not tuple or not path for path in self.group_by):
+            raise TypeError("metric definition group_by must contain non-empty paths")
+        for path in self.group_by:
+            _strings(path, "metric definition group_by path")
+        if type(self.predicates) is not tuple or any(type(item) is not MetricPredicate for item in self.predicates):
+            raise TypeError("metric definition predicates must contain MetricPredicate")
+        if not isinstance(self.missing, MetricMissingPolicy):
+            raise TypeError("metric definition missing must be MetricMissingPolicy")
+        if self.unit is not None:
+            _text(self.unit, "metric definition unit")
+        if type(self.description) is not str:
+            raise TypeError("metric definition description must be a string")
+        object.__setattr__(self, "definition_digest", canonical_digest({
+            "metric_id": self.metric_id, "aggregation": self.aggregation.value,
+            "record_types": self.record_types, "schema_ids": self.schema_ids,
+            "value_path": self.value_path, "group_by": self.group_by,
+            "predicates": tuple(item.predicate_digest for item in self.predicates),
+            "missing": self.missing.value, "unit": self.unit,
+            "description": self.description,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
+class MetricValue:
+    metric_id: str
+    group_key: tuple[JsonValue, ...]
+    value: JsonValue
+    sample_size: int
+    record_digests: tuple[str, ...]
+    value_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.metric_id, "metric value metric_id")
+        if type(self.group_key) is not tuple:
+            raise TypeError("metric value group_key must be a tuple")
+        if type(self.sample_size) is not int or self.sample_size < 0:
+            raise ValueError("metric value sample_size must be non-negative")
+        _digests(self.record_digests, "metric value record_digests")
+        object.__setattr__(self, "value", freeze_json(self.value))
+        object.__setattr__(self, "value_digest", canonical_digest({
+            "metric_id": self.metric_id, "group_key": self.group_key,
+            "value": self.value, "sample_size": self.sample_size,
+            "record_digests": self.record_digests,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
+class MetricReport:
+    raw_cut_digest: str
+    definitions_digest: str
+    values: tuple[MetricValue, ...]
+    report_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        require_sha256(self.raw_cut_digest, "metric report raw_cut_digest")
+        require_sha256(self.definitions_digest, "metric report definitions_digest")
+        if type(self.values) is not tuple or any(type(item) is not MetricValue for item in self.values):
+            raise TypeError("metric report values must contain MetricValue")
+        object.__setattr__(self, "report_digest", canonical_digest({
+            "raw_cut_digest": self.raw_cut_digest,
+            "definitions_digest": self.definitions_digest,
+            "values": tuple(item.value_digest for item in self.values),
+        }))
+
+
 __all__ = [
     "ExperimentParticipantSpec", "ExperimentSpec", "AnalysisPlan", "DoctorFinding",
     "ExecutionMode", "ExperimentDefinition", "ExperimentLifecycleState", "ExperimentModePort",
     "ExperimentPlan", "ExperimentRunReport", "ExperimentTransition", "ExperimentUnit",
     "ExperimentUnitExecutorPort", "ExperimentUnitKind", "ExperimentUnitPlannerPort",
     "FindingSeverity", "ObservationEnvelope", "ObservationKind", "ObservationSinkPort",
-    "ExperimentDoctorPort", "UnitOutcome", "UnitOutcomeState",
+    "ExperimentDoctorPort", "UnitOutcome", "UnitOutcomeState", "RawRecordStorePort",
+    "RawRecord", "MetricAggregation", "MetricMissingPolicy", "MetricPredicate",
+    "MetricDefinition", "MetricValue", "MetricReport",
 ]

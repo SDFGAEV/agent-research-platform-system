@@ -69,6 +69,7 @@ def test_openai_compatible_endpoint_is_bound_to_exact_deployment_route(endpoint_
     assert result.request_id == "rq-1"
     assert result.deployment_id == "dep-1"
     assert result.output_tokens == 4
+    assert result.usage["prompt_tokens"] == 12
     assert len(transport.calls) == 1
     url, body, timeout_s = transport.calls[0]
     assert url == "http://127.0.0.1:30000/v1/chat/completions"
@@ -137,3 +138,46 @@ def test_endpoint_contract_rejects_opaque_request_and_freezes_http_response() ->
         response.body["choices"][0]["text"] = "tampered"
     with pytest.raises(ValueError, match="HTTP status"):
         JsonHttpResponse(600, {"error": "bad"})
+
+class ExchangeObserver:
+    observer_id = "raw-ledger"
+
+    def __init__(self) -> None:
+        self.exchanges = []
+
+    def on_exchange(self, request, response, started_monotonic_ns, completed_monotonic_ns) -> None:
+        self.exchanges.append(
+            (request, response, started_monotonic_ns, completed_monotonic_ns)
+        )
+
+    def on_failure(
+        self, request, error_type, error_message, started_monotonic_ns,
+        completed_monotonic_ns, request_body, response_body,
+    ) -> None:
+        self.exchanges.append(
+            (request, error_type, error_message, started_monotonic_ns,
+             completed_monotonic_ns, request_body, response_body)
+        )
+
+
+def test_model_endpoint_observer_receives_exact_wire_bodies_and_timing(endpoint_group) -> None:
+    runtime, group = endpoint_group
+    wire_request = b'{"messages":[],"model":"qwen"}'
+    wire_response = b'{"choices":[{"text":"ok"}]}'
+    observer = ExchangeObserver()
+    transport = Transport(JsonHttpResponse(
+        200, {"choices": [{"text": "ok"}]},
+        raw_body=wire_response, request_body=wire_request,
+    ))
+    endpoint = OpenAICompatibleModelEndpoint(
+        route=ModelEndpointRoute("dep-1", "a" * 64, "https://model.example"),
+        transport=transport, task_group=group, admission=ModelAdmissionController(1),
+        observers=(observer,),
+    )
+    assert endpoint.complete(_request()).text == "ok"
+    assert len(observer.exchanges) == 1
+    captured_request, captured_response, started, completed = observer.exchanges[0]
+    assert captured_request.request.request_id == "rq-1"
+    assert captured_response.request_body == wire_request
+    assert captured_response.raw_body == wire_response
+    assert completed >= started

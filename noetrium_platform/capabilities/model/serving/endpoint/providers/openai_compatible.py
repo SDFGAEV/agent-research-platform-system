@@ -6,6 +6,7 @@ from contextlib import suppress
 import json
 from collections.abc import Mapping
 import ssl
+import time
 from threading import Lock
 from urllib.parse import urlsplit
 
@@ -19,6 +20,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     AsyncJsonHttpTransportPort,
     JsonHttpResponse,
     ModelEndpointError,
+    ModelEndpointObserverPort,
     ModelEndpointPort,
     ModelEndpointRequest,
     ModelEndpointResponse,
@@ -186,7 +188,8 @@ class AsyncioJsonTransport(AsyncJsonHttpTransportPort):
             raise
         except (TimeoutError, OSError, asyncio.IncompleteReadError) as exc:
             raise ModelEndpointError(
-                f"model endpoint HTTP transport failed: {type(exc).__name__}"
+                f"model endpoint HTTP transport failed: {type(exc).__name__}",
+                request_body=encoded,
             ) from exc
         finally:
             if writer is not None:
@@ -196,8 +199,11 @@ class AsyncioJsonTransport(AsyncJsonHttpTransportPort):
         try:
             parsed_body = json.loads(raw.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise ModelEndpointError("model endpoint HTTP response is not valid JSON") from exc
-        return JsonHttpResponse(status, parsed_body)
+            raise ModelEndpointError(
+                "model endpoint HTTP response is not valid JSON",
+                request_body=encoded, response_body=raw,
+            ) from exc
+        return JsonHttpResponse(status, parsed_body, raw_body=raw, request_body=encoded)
 
 
 class OpenAICompatibleModelEndpoint(ModelEndpointPort):
@@ -210,11 +216,13 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
         transport: AsyncJsonHttpTransportPort,
         task_group: TaskGroupPort,
         admission: ModelAdmissionPort,
+        observers: tuple[ModelEndpointObserverPort, ...] = (),
     ) -> None:
         self._route = route
         self.transport = transport
         self._task_group = task_group
         self._admission = admission
+        self._observers = tuple(observers)
         self._sequence_lock = Lock()
         self._sequence = 0
 
@@ -227,6 +235,41 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             self._sequence += 1
             sequence = self._sequence
         return f"model-http:{request_id}:{sequence}"
+
+    def _notify_exchange(
+        self,
+        request: ModelEndpointRequest,
+        response: JsonHttpResponse,
+        started_monotonic_ns: int,
+        completed_monotonic_ns: int,
+    ) -> None:
+        for observer in self._observers:
+            try:
+                observer.on_exchange(
+                    request, response, started_monotonic_ns, completed_monotonic_ns
+                )
+            except Exception as exc:
+                observer_id = getattr(observer, "observer_id", type(observer).__qualname__)
+                raise ModelEndpointError(
+                    f"lossless model exchange capture failed: {observer_id}"
+                ) from exc
+
+    def _notify_failure(
+        self,
+        request: ModelEndpointRequest,
+        exc: BaseException,
+        started_monotonic_ns: int,
+        completed_monotonic_ns: int,
+    ) -> None:
+        for observer in self._observers:
+            callback = getattr(observer, "on_failure", None)
+            if callable(callback):
+                callback(
+                    request, type(exc).__name__, str(exc)[:2048],
+                    started_monotonic_ns, completed_monotonic_ns,
+                    getattr(exc, "request_body", b""),
+                    getattr(exc, "response_body", b""),
+                )
 
     async def _post(
         self,
@@ -255,6 +298,20 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             lease.release()
 
     def complete(self, request: ModelEndpointRequest) -> ModelEndpointResponse:
+        started_monotonic_ns = time.perf_counter_ns()
+        try:
+            return self._complete(request, started_monotonic_ns)
+        except ModelEndpointError as exc:
+            self._notify_failure(
+                request, exc, started_monotonic_ns, time.perf_counter_ns()
+            )
+            raise
+
+    def _complete(
+        self,
+        request: ModelEndpointRequest,
+        started_monotonic_ns: int,
+    ) -> ModelEndpointResponse:
         if request.deployment_id != self.route.deployment_id:
             raise ModelEndpointError("endpoint request deployment does not match route")
         if request.deployment_generation != self.route.deployment_generation:
@@ -290,6 +347,9 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             raise ModelEndpointError("model endpoint HTTP transport failed: TimeoutError") from exc
         except (TaskCancelled, CancelledError) as exc:
             raise ModelEndpointError("model endpoint HTTP transport cancelled at deadline") from exc
+        self._notify_exchange(
+            request, response, started_monotonic_ns, time.perf_counter_ns()
+        )
         if not 200 <= response.status_code < 300:
             raise ModelEndpointError(
                 f"model endpoint returned HTTP {response.status_code}: {_error_detail(response.body)}"
@@ -321,6 +381,7 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             finish_reason=finish_reason,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
+            usage=usage if isinstance(usage, Mapping) else None,
         )
 
 

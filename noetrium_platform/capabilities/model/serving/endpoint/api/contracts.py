@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import re
-from typing import Mapping
+from typing import Mapping, Protocol
 from urllib.parse import urlparse
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
@@ -95,15 +95,46 @@ class ModelEndpointRoute:
 
 @dataclass(frozen=True, slots=True)
 class JsonHttpResponse:
+    """Parsed response with the exact wire bytes retained for observation."""
+
     status_code: int
     body: JsonValue
+    raw_body: bytes = b""
+    request_body: bytes = b""
 
     def __post_init__(self) -> None:
         if type(self.status_code) is not int or not 100 <= self.status_code <= 599:
             raise ValueError("HTTP status code is invalid")
-        object.__setattr__(
-            self, "body", freeze_json(self.body)
-        )
+        if type(self.raw_body) is not bytes or type(self.request_body) is not bytes:
+            raise TypeError("HTTP wire bodies must be exact bytes")
+        object.__setattr__(self, "body", freeze_json(self.body))
+
+
+class ModelEndpointObserverPort(Protocol):
+    """Non-authoritative hook for lossless model request/response capture."""
+
+    observer_id: str
+
+    def on_exchange(
+        self,
+        request: ModelEndpointRequest,
+        response: JsonHttpResponse,
+        started_monotonic_ns: int,
+        completed_monotonic_ns: int,
+    ) -> None:
+        ...
+
+    def on_failure(
+        self,
+        request: ModelEndpointRequest,
+        error_type: str,
+        error_message: str,
+        started_monotonic_ns: int,
+        completed_monotonic_ns: int,
+        request_body: bytes,
+        response_body: bytes,
+    ) -> None:
+        ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,6 +147,7 @@ class ModelEndpointResponse:
     finish_reason: str | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
+    usage: JsonValue | None = None
     response_digest: str = ""
 
     def __post_init__(self) -> None:
@@ -127,6 +159,10 @@ class ModelEndpointResponse:
             value = getattr(self, name)
             if value is not None and (type(value) is not int or value < 0):
                 raise ValueError(f"{name} must be non-negative")
+        if self.usage is not None:
+            object.__setattr__(self, "usage", freeze_json(self.usage))
+            if not isinstance(self.usage, Mapping):
+                raise TypeError("model endpoint response usage must be a mapping")
         expected = canonical_digest({
             "request_id": self.request_id,
             "deployment_id": self.deployment_id,
@@ -134,6 +170,7 @@ class ModelEndpointResponse:
             "finish_reason": self.finish_reason,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
+            "usage": self.usage,
         })
         if self.response_digest and self.response_digest != expected:
             raise ValueError("model endpoint response digest mismatch")
@@ -141,12 +178,25 @@ class ModelEndpointResponse:
 
 
 class ModelEndpointError(RuntimeError):
-    """The endpoint could not produce a response satisfying its transport ABI."""
+    """Transport failure with any wire bytes that were actually received."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        request_body: bytes = b"",
+        response_body: bytes = b"",
+    ) -> None:
+        super().__init__(message)
+        if type(request_body) is not bytes or type(response_body) is not bytes:
+            raise TypeError("model endpoint error wire bodies must be exact bytes")
+        self.request_body = request_body
+        self.response_body = response_body
 
 
 __all__ = [
     "JsonHttpResponse",
-    "ModelEndpointError",
+    "ModelEndpointError", "ModelEndpointObserverPort",
     "ModelEndpointRequest",
     "ModelEndpointResponse",
     "ModelEndpointRoute",

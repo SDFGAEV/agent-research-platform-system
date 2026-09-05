@@ -4,6 +4,8 @@ from .contracts import (
     ExperimentRunReport, ExecutionMode, ExperimentTransition, ExperimentUnit,
     ExperimentUnitExecutorPort, ExperimentUnitKind, ExperimentUnitPlannerPort,
     ExperimentSpec, FindingSeverity, ObservationEnvelope, ObservationKind,
+    RawRecordStorePort, RawRecord, MetricAggregation, MetricMissingPolicy,
+    MetricPredicate, MetricDefinition, MetricValue, MetricReport,
     ObservationSinkPort, ExperimentDoctorPort, UnitOutcome, UnitOutcomeState,
 )
 from .ports import ExperimentComponentBindingPort, ExperimentTrialCycleExecutorPort
@@ -37,6 +39,14 @@ __all__ = [
     "ExperimentUnitExecutorPort",
     "ExperimentUnitKind",
     "ExperimentUnitPlannerPort",
+    "RawRecordStorePort",
+    "RawRecord",
+    "MetricAggregation",
+    "MetricMissingPolicy",
+    "MetricPredicate",
+    "MetricDefinition",
+    "MetricValue",
+    "MetricReport",
     "ExperimentParticipantTopology",
     "ExperimentTrialCycleExecutorPort",
     "ExperimentTrialProtocol",

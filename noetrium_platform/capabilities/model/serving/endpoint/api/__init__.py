@@ -1,6 +1,7 @@
 from .contracts import (
     JsonHttpResponse,
     ModelEndpointError,
+    ModelEndpointObserverPort,
     ModelEndpointRequest,
     ModelEndpointResponse,
     ModelEndpointRoute,
@@ -11,7 +12,7 @@ from .qualification import QualifiedModelEndpointBinding, QualifiedModelEndpoint
 
 __all__ = [
     "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointError",
-    "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
+    "ModelEndpointObserverPort", "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
     "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",
     "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",
     "QualifiedModelEndpointBindingPort",

@@ -15,6 +15,14 @@ from noetrium_platform.research.experimentation.experiment.api.contracts import 
     ObservationEnvelope as UniversalObservationEnvelope,
     ObservationKind as UniversalObservationKind,
     ObservationSinkPort as UniversalObservationSinkPort,
+    RawRecord as UniversalRawRecord,
+    RawRecordStorePort as UniversalRawRecordStorePort,
+    MetricAggregation as UniversalMetricAggregation,
+    MetricDefinition as UniversalMetricDefinition,
+    MetricMissingPolicy as UniversalMetricMissingPolicy,
+    MetricPredicate as UniversalMetricPredicate,
+    MetricReport as UniversalMetricReport,
+    MetricValue as UniversalMetricValue,
     DoctorFinding as UniversalDoctorFinding,
     UnitOutcome as UniversalUnitOutcome,
     UnitOutcomeState as UniversalUnitOutcomeState,
@@ -22,7 +30,9 @@ from noetrium_platform.research.experimentation.experiment.api.contracts import 
 from dataclasses import dataclass
 
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
+import math
+from threading import RLock
 from typing import TypeVar
 from uuid import uuid4
 
@@ -445,22 +455,229 @@ class StaticUnitPlanner:
 
 
 class InMemoryObservationLedger(UniversalObservationSinkPort):
-    """Strict ordered ledger used by tests and small local runs."""
+    """Strict ordered observation and verbatim raw-record ledger."""
 
     def __init__(self) -> None:
+        self._lock = RLock()
         self._observations: list[UniversalObservationEnvelope] = []
         self._last_sequence: dict[tuple[str, str], int] = {}
+        self._raw_records: list[UniversalRawRecord] = []
+        self._last_raw_sequence: dict[tuple[str, str], int] = {}
+        self._raw_digests: set[str] = set()
 
     def append(self, observation: UniversalObservationEnvelope) -> None:
-        key = (observation.run_id, observation.unit_id)
-        last = self._last_sequence.get(key, -1)
-        if observation.sequence != last + 1:
-            raise ValueError(f"observation sequence gap or duplicate for {key!r}")
-        self._last_sequence[key] = observation.sequence
-        self._observations.append(observation)
+        with self._lock:
+            key = (observation.run_id, observation.unit_id)
+            last = self._last_sequence.get(key, -1)
+            if observation.sequence != last + 1:
+                raise ValueError(f"observation sequence gap or duplicate for {key!r}")
+            self._last_sequence[key] = observation.sequence
+            self._observations.append(observation)
 
     def snapshot(self) -> tuple[UniversalObservationEnvelope, ...]:
-        return tuple(self._observations)
+        with self._lock:
+            return tuple(self._observations)
+
+    def append_raw_record(self, record: UniversalRawRecord) -> None:
+        if type(record) is not UniversalRawRecord:
+            raise TypeError("raw ledger accepts only RawRecord")
+        with self._lock:
+            key = (record.run_id, record.unit_id)
+            last = self._last_raw_sequence.get(key, -1)
+            if record.sequence != last + 1:
+                raise ValueError(f"raw record sequence gap or duplicate for {key!r}")
+            if record.record_digest in self._raw_digests:
+                raise ValueError("raw ledger rejects duplicate record digest")
+            self._last_raw_sequence[key] = record.sequence
+            self._raw_digests.add(record.record_digest)
+            self._raw_records.append(record)
+
+    def raw_snapshot(self) -> tuple[UniversalRawRecord, ...]:
+        with self._lock:
+            return tuple(self._raw_records)
+
+
+def _metric_path(value: object, path: tuple[str, ...]) -> tuple[bool, object]:
+    current = value
+    for part in path:
+        if isinstance(current, Mapping):
+            if part not in current:
+                return False, None
+            current = current[part]
+        elif isinstance(current, (tuple, list)) and part.isdecimal():
+            index = int(part)
+            if index >= len(current):
+                return False, None
+            current = current[index]
+        else:
+            return False, None
+    return True, current
+
+
+def _metric_record_path(record: UniversalRawRecord, path: tuple[str, ...]) -> tuple[bool, object]:
+    """Resolve payload paths and explicit envelope/dimension namespaces.
+
+    Existing payload paths remain concise; envelope and extensible dimensions
+    are addressed as envelope.* and dimensions.* so every captured fact can
+    become a metric without changing the raw ledger.
+    """
+    if path and path[0] == "envelope":
+        envelope = {
+            "experiment_id": record.experiment_id, "run_id": record.run_id,
+            "unit_id": record.unit_id, "sequence": record.sequence,
+            "stream_id": record.stream_id, "attempt_id": record.attempt_id,
+            "causation_id": record.causation_id, "correlation_id": record.correlation_id,
+            "trace_id": record.trace_id, "span_id": record.span_id,
+            "occurred_at": record.occurred_at, "recorded_at": record.recorded_at,
+            "monotonic_ns": record.monotonic_ns, "clock_source": record.clock_source,
+            "clock_uncertainty_ns": record.clock_uncertainty_ns,
+            "producer_id": record.producer_id, "producer_version": record.producer_version,
+            "schema_id": record.schema_id, "record_type": record.record_type,
+            "event_name": record.event_name, "operation_id": record.operation_id,
+            "status": record.status, "outcome": record.outcome,
+            "raw_payload_digest": record.raw_payload_digest,
+            "record_digest": record.record_digest,
+            "content_type": record.content_type, "content_encoding": record.content_encoding,
+            "sampled": record.sampled, "sampling_rate": record.sampling_rate,
+        }
+        return _metric_path(envelope, path[1:])
+    if path and path[0] == "dimensions":
+        return _metric_path(record.dimensions, path[1:])
+    present, value = _metric_path(record.payload, path)
+    if present:
+        return present, value
+    return _metric_path(record.dimensions, path)
+
+
+def _metric_number(value: object, metric_id: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"metric {metric_id} requires numeric values")
+    if not math.isfinite(float(value)):
+        raise ValueError(f"metric {metric_id} requires finite numeric values")
+    return float(value)
+
+
+def _metric_aggregate(
+    aggregation: UniversalMetricAggregation,
+    values: list[object],
+    metric_id: str,
+) -> object:
+    if aggregation is UniversalMetricAggregation.COUNT:
+        return len(values)
+    if aggregation is UniversalMetricAggregation.FIRST:
+        return values[0] if values else None
+    if aggregation is UniversalMetricAggregation.LAST:
+        return values[-1] if values else None
+    if aggregation is UniversalMetricAggregation.DISTINCT_COUNT:
+        return len({canonical_digest(item) for item in values})
+    numbers = [_metric_number(item, metric_id) for item in values]
+    if aggregation is UniversalMetricAggregation.SUM:
+        return sum(numbers)
+    if not numbers:
+        return 0.0
+    if aggregation is UniversalMetricAggregation.MEAN:
+        return sum(numbers) / len(numbers)
+    if aggregation is UniversalMetricAggregation.MIN:
+        return min(numbers)
+    if aggregation is UniversalMetricAggregation.MAX:
+        return max(numbers)
+    if aggregation is UniversalMetricAggregation.STDDEV:
+        mean = sum(numbers) / len(numbers)
+        return math.sqrt(sum((item - mean) ** 2 for item in numbers) / len(numbers))
+    ordered = sorted(numbers)
+    rank = (len(ordered) - 1) * (0.50 if aggregation is UniversalMetricAggregation.P50 else 0.95)
+    lower = math.floor(rank)
+    upper = math.ceil(rank)
+    if lower == upper:
+        return ordered[lower]
+    weight = rank - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+class MetricEngine:
+    """Compile no code; evaluate typed metric declarations over an immutable cut."""
+
+    @staticmethod
+    def evaluate(
+        records: tuple[UniversalRawRecord, ...],
+        definitions: tuple[UniversalMetricDefinition, ...],
+    ) -> UniversalMetricReport:
+        if type(records) is not tuple or any(type(item) is not UniversalRawRecord for item in records):
+            raise TypeError("metric engine records must contain RawRecord")
+        if type(definitions) is not tuple or not definitions:
+            raise ValueError("metric engine definitions must be a non-empty tuple")
+        ids = tuple(item.metric_id for item in definitions)
+        if len(ids) != len(set(ids)):
+            raise ValueError("metric definitions must have unique metric ids")
+        record_ids = tuple(item.record_digest for item in records)
+        if len(record_ids) != len(set(record_ids)):
+            raise ValueError("metric engine raw cut contains duplicate records")
+        values: list[UniversalMetricValue] = []
+        for definition in definitions:
+            groups: dict[str, tuple[tuple[object, ...], list[object], list[UniversalRawRecord]]] = {}
+            for record in records:
+                if definition.record_types and record.record_type not in definition.record_types:
+                    continue
+                if definition.schema_ids and record.schema_id not in definition.schema_ids:
+                    continue
+                if any(
+                    not _metric_record_path(record, predicate.path)[0]
+                    or _metric_record_path(record, predicate.path)[1] != predicate.equals
+                    for predicate in definition.predicates
+                ):
+                    continue
+                group_key_values: list[object] = []
+                group_missing = False
+                for path in definition.group_by:
+                    present, group_value = _metric_record_path(record, path)
+                    if not present:
+                        group_missing = True
+                        break
+                    group_key_values.append(group_value)
+                if group_missing:
+                    if definition.missing is UniversalMetricMissingPolicy.FAIL:
+                        raise ValueError(f"metric {definition.metric_id} has a missing group field")
+                    continue
+                if definition.aggregation is UniversalMetricAggregation.COUNT:
+                    present, value = True, 1
+                else:
+                    present, value = _metric_record_path(record, definition.value_path)
+                    if not present:
+                        if definition.missing is UniversalMetricMissingPolicy.FAIL:
+                            raise ValueError(f"metric {definition.metric_id} has a missing value field")
+                        if definition.missing is UniversalMetricMissingPolicy.ZERO:
+                            value = 0
+                            present = True
+                if not present:
+                    continue
+                group_key = canonical_digest(tuple(group_key_values))
+                row = groups.setdefault(group_key, (tuple(group_key_values), [], []))
+                row[1].append(value)
+                row[2].append(record)
+            if not groups:
+                empty_value = 0 if definition.aggregation in (
+                    UniversalMetricAggregation.COUNT,
+                    UniversalMetricAggregation.DISTINCT_COUNT,
+                ) else _metric_aggregate(definition.aggregation, [], definition.metric_id)
+                values.append(UniversalMetricValue(
+                    definition.metric_id, (), empty_value, 0, (),
+                ))
+                continue
+            for group_key, (key_values, group_values, group_records) in groups.items():
+                del group_key
+                values.append(UniversalMetricValue(
+                    definition.metric_id,
+                    tuple(key_values),
+                    _metric_aggregate(definition.aggregation, group_values, definition.metric_id),
+                    len(group_values),
+                    tuple(sorted(record.record_digest for record in group_records)),
+                ))
+        values.sort(key=lambda item: (item.metric_id, canonical_digest(item.group_key)))
+        return UniversalMetricReport(
+            canonical_digest(record_ids),
+            canonical_digest(tuple(item.definition_digest for item in definitions)),
+            tuple(values),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -625,5 +842,5 @@ UniversalDoctorReport = DoctorReport
 __all__ = [
     "StudyMatrixExecutor", "StudyMatrixUniversalProjection", "StaticUnitPlanner",
     "InMemoryObservationLedger", "DoctorReport", "ExperimentDoctor", "ExperimentLifecycle",
-    "UniversalExperimentKernel", "UniversalExperimentRunner",
+    "UniversalExperimentKernel", "UniversalExperimentRunner", "MetricEngine",
 ]

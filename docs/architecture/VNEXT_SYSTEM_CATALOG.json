@@ -1043,6 +1043,27 @@
     "provides": [],
     "components": []
   },
+  "governance/evolution": {
+    "authority": "system_evolution",
+    "must_not_own": "domain state, external effects and direct runtime mutation",
+    "owns": "topology-driven discovery, drift detection and improvement proposals",
+    "package_prefix": "noetrium_platform.foundation.governance.evolution",
+    "parent": "governance",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "governance/system_registry",
+      "observability"
+    ],
+    "provides": [
+      "governance.evolution"
+    ],
+    "components": []
+  },
   "model": {
     "authority": "model_identity",
     "must_not_own": "process lifecycle implementation and experiment semantics",

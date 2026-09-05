@@ -12,7 +12,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     require_action_result_identity,
 )
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec, FailureScope
-from noetrium_platform.capabilities.participant.method.api import MethodSession, MethodTaskOutcome, RecallRequest
+from noetrium_platform.capabilities.participant.method.api.contracts import MethodSession, MethodTaskOutcome, RecallRequest
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 
 from ..api import (

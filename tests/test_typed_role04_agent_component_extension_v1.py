@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.participant.agent import AgentCognitionLoop
+from noetrium_platform.capabilities.participant.agent.runtime import AgentCognitionLoop
 from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentActionStep,

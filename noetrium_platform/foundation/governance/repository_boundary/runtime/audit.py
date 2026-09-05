@@ -21,10 +21,10 @@ _FORBIDDEN_ROOTS = (
 )
 
 _FRAMEWORK_ENVIRONMENT_DIRS = frozenset({"api", "binding", "catalog", "composition", "instance", "providers", "python", "resolution", "runtime", "specification"})
-_BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft"})
+_BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft", "embodied"})
 _ALLOWED_ENVIRONMENT_SYSTEMS = frozenset({
     "environment", "environment/binding", "environment/catalog", "environment/instance",
-    "environment/instance/identity", "environment/instance/readiness", "environment/minecraft",
+    "environment/instance/identity", "environment/instance/readiness", "environment/minecraft", "environment/embodied",
     "environment/python", "environment/resolution", "environment/runtime", "environment/specification",
     "environment/specification/digest", "environment/specification/schema",
 })

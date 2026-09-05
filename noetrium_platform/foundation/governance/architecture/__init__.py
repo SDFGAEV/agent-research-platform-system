@@ -3,7 +3,7 @@ from .dataflow import DataflowAudit, DataflowEdge
 from .import_graph import DEFAULT_IMPORT_RULES, ImportEdge, ImportRule, ImportViolation, LayerViolation, audit_import_rules, audit_layer_dag, package_cycles, scan_imports
 from .hotspots import ModuleHotspot, analyze_hotspots
 from .report import ArchitectureReport
-from .composition import build_architecture_report
+from .report import build_architecture_report
 __all__=["ArchitectureAudit","AuditViolation","ComponentDescriptor","DataflowAudit","DataflowEdge","DEFAULT_IMPORT_RULES","ImportEdge","ImportRule","ImportViolation","LayerViolation","audit_import_rules","audit_layer_dag","package_cycles","scan_imports","ModuleHotspot","analyze_hotspots","ArchitectureReport","build_architecture_report"]
 from .optimization import ModuleOptimizationProfile, OptimizationReport, analyze_optimization_risks, build_optimization_report
 __all__ = tuple(globals().get("__all__", ())) + ("ModuleOptimizationProfile","OptimizationReport","analyze_optimization_risks","build_optimization_report")

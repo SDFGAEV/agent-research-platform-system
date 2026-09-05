@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.infrastructure.resources.resolution import ResolutionPolicy
+from noetrium_platform.infrastructure.resources.resolution.contracts import ResolutionPolicy
 
 
 class ExecutionEnvironmentKind(StrEnum):

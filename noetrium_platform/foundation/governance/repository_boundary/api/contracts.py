@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
+from typing import Protocol
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,6 +21,12 @@ class RepositoryBoundaryReport:
     @property
     def passed(self) -> bool:
         return not self.violations
+
+
+class RepositoryBoundaryAuditor(Protocol):
+    """Injected read-only boundary audit authority for product tooling."""
+
+    def __call__(self, root: Path) -> "DownstreamProjectImportReport": ...
 
 
 class DownstreamImportKind(StrEnum):
@@ -53,4 +61,5 @@ __all__ = [
     "DownstreamProjectImportReport",
     "RepositoryBoundaryReport",
     "RepositoryBoundaryViolation",
+    "RepositoryBoundaryAuditor",
 ]

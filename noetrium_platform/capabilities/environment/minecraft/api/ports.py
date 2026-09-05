@@ -11,7 +11,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     Observation,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput, JsonValue
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceReadyObservation, ServiceStartOutcome, ServiceStopOutcome
+from noetrium_platform.infrastructure.lifecycle.service.api.ports import ServiceReadyObservation, ServiceStartOutcome, ServiceStopOutcome
 
 from .contracts import (
     MinecraftBranchRuntimeRequest,

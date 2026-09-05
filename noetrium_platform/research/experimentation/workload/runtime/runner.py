@@ -5,7 +5,7 @@ import time
 
 from noetrium_platform.capabilities.environment.runtime.api import ActionResult
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
-from noetrium_platform.capabilities.participant.method.api import MethodSession
+from noetrium_platform.capabilities.participant.method.api.contracts import MethodSession
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 
 from ..api import (

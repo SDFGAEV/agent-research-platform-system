@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from noetrium_platform.research.experimentation.workload import WorkloadBatchBindingPort
+    from noetrium_platform.research.experimentation.workload.api import WorkloadBatchBindingPort
 
 from noetrium_platform.research.experimentation.workload.api import WorkloadBatchResult
 

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.workload import (
-    GenericWorkloadBatchExecutor,
+from noetrium_platform.research.experimentation.workload.api import (
     WorkloadBatchBindingPort,
-    WorkloadBatchCloseError,
-    WorkloadBatchResult,
     WorkloadExecutionCutObserverPort,
     WorkloadTaskResult,
+)
+from noetrium_platform.research.experimentation.workload.runtime import (
+    GenericWorkloadBatchExecutor,
+    WorkloadBatchCloseError,
+    WorkloadBatchResult,
 )
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext

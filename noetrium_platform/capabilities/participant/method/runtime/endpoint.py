@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.participant.method.api.runtime import (
+from noetrium_platform.capabilities.participant.method.api.ports import (
     MethodEndpointPort,
     MethodImplementation,
     MethodRuntimeBinding,

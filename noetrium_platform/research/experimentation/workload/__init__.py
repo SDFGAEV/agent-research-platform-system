@@ -1,4 +1,8 @@
-"""Environment-neutral workload execution subsystem."""
+"""Environment-neutral workload API boundary.
+
+Executors are runtime implementations and must be selected explicitly from
+workload.runtime by composition code.
+"""
 
 from .api import (
     WorkloadActionAdapterPort,
@@ -19,12 +23,8 @@ from .api import (
     WorkloadTaskRunError,
     WorkloadDecision,
 )
-from .runtime import GenericWorkloadBatchExecutor, WorkloadBatchCloseError, GenericWorkloadTaskRunner
 
 __all__ = [
-    "GenericWorkloadBatchExecutor",
-    "WorkloadBatchCloseError",
-    "GenericWorkloadTaskRunner",
     "WorkloadBatchResult",
     "WorkloadActionAdapterPort",
     "WorkloadBatchBindingPort",

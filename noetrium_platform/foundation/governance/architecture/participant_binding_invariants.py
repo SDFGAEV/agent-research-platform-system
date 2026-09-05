@@ -28,7 +28,7 @@ def audit_participant_binding_invariants(root: Path) -> list[SourceInvariantViol
             if missing:
                 rows.append(violation(root, contracts, "participant_runtime_binding_identity", node.lineno, f"ParticipantRuntimeBinding is missing independent frozen identity fields: {missing}"))
 
-    method_contracts = root / "noetrium_platform" / "capabilities" / "participant" / "method" / "api" / "runtime.py"
+    method_contracts = root / "noetrium_platform" / "capabilities" / "participant" / "method" / "api" / "ports.py"
     method_runtime = root / "noetrium_platform" / "capabilities" / "participant" / "method" / "runtime" / "endpoint.py"
     if method_contracts.exists():
         contract_tree = source_tree(method_contracts)

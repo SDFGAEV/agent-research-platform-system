@@ -31,7 +31,7 @@ from .observability import (
     MethodObservationSink,
     MethodServices,
 )
-from .runtime import (
+from .ports import (
     MethodCompositionPorts,
     MethodEndpointFactoryPort,
     MethodEndpointPort,

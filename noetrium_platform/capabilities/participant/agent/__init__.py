@@ -1,9 +1,7 @@
-"""Public participant-agent facade.
+"""Participant-agent API boundary.
 
-The runtime implementation remains below ``participant.agent.runtime``; this
-facade is the platform-owned cognition entry point for project composition.
+Concrete cognition loops are composition-owned and must be imported from
+participant.agent.runtime by an explicit composition root.
 """
 
-from .runtime import AgentCognitionLoop
-
-__all__ = ["AgentCognitionLoop"]
+__all__ = []

@@ -1,3 +1,8 @@
+"""Repository-boundary contracts.
+
+Auditors are runtime services and require an explicit composition import.
+"""
+
 from .api import (
     DownstreamImportKind,
     DownstreamImportObservation,
@@ -5,7 +10,6 @@ from .api import (
     RepositoryBoundaryReport,
     RepositoryBoundaryViolation,
 )
-from .runtime import audit_downstream_project_imports, audit_repository_boundary
 
 __all__ = [
     "DownstreamImportKind",
@@ -13,6 +17,4 @@ __all__ = [
     "DownstreamProjectImportReport",
     "RepositoryBoundaryReport",
     "RepositoryBoundaryViolation",
-    "audit_downstream_project_imports",
-    "audit_repository_boundary",
 ]

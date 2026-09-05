@@ -6,7 +6,7 @@ from typing import Protocol
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec, FailureScope
 from noetrium_platform.research.experimentation.run.api import RunDiagnosticsPort
 from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult, Observation
-from noetrium_platform.capabilities.participant.method.api import MethodSession
+from noetrium_platform.capabilities.participant.method.api.contracts import MethodSession
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 
 from .contracts import WorkloadDecision, WorkloadTaskResult

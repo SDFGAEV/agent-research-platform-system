@@ -6,7 +6,7 @@ import subprocess
 
 import pytest
 
-from noetrium_platform.foundation.governance.repository_boundary import audit_downstream_project_imports
+from noetrium_platform.foundation.governance.repository_boundary.runtime import audit_downstream_project_imports
 from noetrium_platform.product.operator.api import (
     ProjectCreateRequest, ProjectDoctorDisposition, ProjectTemplateProfile, ProjectTestStage,
 )
@@ -136,7 +136,7 @@ def test_project_doctor_rejects_manifest_and_private_import_drift(
     root = tmp_path / "demo-project"
     project_scaffold.create_project(ProjectCreateRequest("demo-project", "0.1.0", root))
 
-    initial = project_doctor.doctor_project(root)
+    initial = project_doctor.doctor_project(root, boundary_auditor=audit_downstream_project_imports)
     initial_checks = _checks(initial)
     assert initial.template_profile is ProjectTemplateProfile.AUTHOR
     assert initial_checks["project_manifest"] is ProjectDoctorDisposition.PASS
@@ -152,7 +152,7 @@ def test_project_doctor_rejects_manifest_and_private_import_drift(
     private_source = root / "src" / "demo_project" / "private_import.py"
     private_source.write_text("from noetrium_platform.product.operator.runtime import research_cli\n", encoding="utf-8")
 
-    drifted = project_doctor.doctor_project(root)
+    drifted = project_doctor.doctor_project(root, boundary_auditor=audit_downstream_project_imports)
     drifted_checks = _checks(drifted)
     assert drifted_checks["project_manifest"] is ProjectDoctorDisposition.BLOCKED
     assert drifted_checks["manifest_identity"] is ProjectDoctorDisposition.BLOCKED
@@ -169,7 +169,7 @@ def test_project_doctor_rejects_unknown_manifest_template(
     future = replace(manifest, template_revision="noetrium.project-template.v999")
     manifest_path.write_bytes(encode_project_manifest(future))
 
-    report = project_doctor.doctor_project(root)
+    report = project_doctor.doctor_project(root, boundary_auditor=audit_downstream_project_imports)
     checks = _checks(report)
     assert checks["project_manifest"] is ProjectDoctorDisposition.PASS
     assert checks["manifest_template_revision"] is ProjectDoctorDisposition.BLOCKED
@@ -197,7 +197,7 @@ def test_project_doctor_projects_typed_provider_diagnostics(
         template_profile=ProjectTemplateProfile.PROVIDER,
     ))
 
-    report = project_doctor.doctor_project(root)
+    report = project_doctor.doctor_project(root, boundary_auditor=audit_downstream_project_imports)
     rows = {row.check_id: row for row in report.checks}
     assert report.template_profile is ProjectTemplateProfile.PROVIDER
     assert "PARTICIPANT_RUNTIME_UNAVAILABLE" in rows["participant_provider_readiness"].remediation

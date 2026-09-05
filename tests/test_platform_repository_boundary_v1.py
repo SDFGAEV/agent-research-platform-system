@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from noetrium_platform.foundation.governance.repository_boundary import (
-    DownstreamImportKind,
+from noetrium_platform.foundation.governance.repository_boundary.api import DownstreamImportKind
+from noetrium_platform.foundation.governance.repository_boundary.runtime import (
     audit_downstream_project_imports,
     audit_repository_boundary,
 )

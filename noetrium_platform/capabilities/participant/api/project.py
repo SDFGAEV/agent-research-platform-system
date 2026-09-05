@@ -5,7 +5,11 @@ from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.participant.agent.api import AgentIdentity
-from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity, MethodProgramIdentityMismatch
+from noetrium_platform.capabilities.participant.method.api.contracts import (
+    MethodIdentity,
+    MethodProgramIdentity,
+    MethodProgramIdentityMismatch,
+)
 from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,

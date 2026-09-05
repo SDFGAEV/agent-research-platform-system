@@ -4,6 +4,7 @@ from .contracts import (
     DownstreamProjectImportReport,
     RepositoryBoundaryReport,
     RepositoryBoundaryViolation,
+    RepositoryBoundaryAuditor,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "DownstreamProjectImportReport",
     "RepositoryBoundaryReport",
     "RepositoryBoundaryViolation",
+    "RepositoryBoundaryAuditor",
 ]

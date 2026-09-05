@@ -1,2 +1,6 @@
-from .composition import build_performance_governance
-__all__=["build_performance_governance"]
+"""Performance-governance API boundary.
+
+The concrete governance service is selected from performance.composition.
+"""
+
+__all__ = []

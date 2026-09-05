@@ -8,10 +8,10 @@ from noetrium_platform.foundation.governance.evolution import (
     DriftKind,
     EvolutionStage,
     ObservationOutcome,
-    RegistryDrivenEvolutionController,
     SignalKind,
     TopologyObservation,
 )
+from noetrium_platform.foundation.governance.evolution.runtime import RegistryDrivenEvolutionController
 from noetrium_platform.foundation.governance.system_registry.api import (
     AuthorityDescriptor,
     SystemDescriptor,

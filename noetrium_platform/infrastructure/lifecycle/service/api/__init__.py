@@ -1,5 +1,5 @@
 from .contracts import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
-from .runtime import (
+from .ports import (
     ExactServiceRuntimePort,
     ServiceReadyObservation,
     ServiceReconcileObservation,

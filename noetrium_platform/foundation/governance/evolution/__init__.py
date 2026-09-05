@@ -1,3 +1,9 @@
+"""Evolution governance contracts.
+
+Controllers are composition/runtime concerns and are intentionally not
+re-exported from this public package root.
+"""
+
 from .api import (
     DiscoveryReport,
     DriftKind,
@@ -12,7 +18,6 @@ from .api import (
     TopologyDrift,
     TopologyObservation,
 )
-from .runtime import RegistryDrivenEvolutionController
 
 __all__ = [
     "DiscoveryReport",
@@ -23,7 +28,6 @@ __all__ = [
     "EvolutionTransition",
     "ImprovementSignal",
     "ObservationOutcome",
-    "RegistryDrivenEvolutionController",
     "SignalKind",
     "SystemEvolutionPort",
     "TopologyDrift",

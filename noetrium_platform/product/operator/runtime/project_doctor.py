@@ -7,7 +7,7 @@ import re
 import subprocess
 import tomllib
 
-from noetrium_platform.foundation.governance.repository_boundary import audit_downstream_project_imports
+from noetrium_platform.foundation.governance.repository_boundary.api import RepositoryBoundaryAuditor
 from noetrium_platform.product.operator.api import (
     ProjectTemplateProfile,
     project_template_revision,
@@ -312,7 +312,7 @@ def _template_profile(revision: str | None) -> ProjectTemplateProfile | None:
     return None
 
 
-def doctor_project(project_root: Path) -> ProjectDoctorReport:
+def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAuditor) -> ProjectDoctorReport:
     root = project_root.expanduser().absolute()
     checks: list[ProjectDoctorCheck] = []
     marker = root / ".noetrium-template"
@@ -417,7 +417,7 @@ def doctor_project(project_root: Path) -> ProjectDoctorReport:
     ))
 
     try:
-        boundary_report = audit_downstream_project_imports(root)
+        boundary_report = boundary_auditor(root)
         boundary_ok = boundary_report.passed
         violation_detail = "; ".join(
             f"{row.path}: {row.detail}" for row in boundary_report.violations

@@ -9,13 +9,13 @@ import sys
 from noetrium_platform.product.operator.api import (
     ProjectCreateRequest, ProjectTemplateProfile, ResearchAction, ResearchFacade, ResearchOperationFailure,
 )
+from noetrium_platform.product.operator.api.project_experience import ProjectFacade
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 from noetrium_platform.product.operator.api.json_rendering import render_json
 
 from .application_loader import ResearchApplicationFactorySpec, load_research_application
 from .project_application_loader import load_project_application
-from .project_experience import create_project, doctor_project, test_project
 
 ResearchCliDelegate = Callable[[list[str] | None], int]
 _EXPECTED_ERRORS = (KeyError, ValueError, FileNotFoundError, OSError, RuntimeError, TypeError, json.JSONDecodeError)
@@ -121,17 +121,17 @@ def _run_application(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_project(args: argparse.Namespace) -> int:
+def _run_project(args: argparse.Namespace, project_experience: ProjectFacade) -> int:
     if args.project_command == "create":
-        receipt = create_project(ProjectCreateRequest(args.project_id, args.version, args.destination, args.program_id, ProjectTemplateProfile(args.template)))
+        receipt = project_experience.create(args.project_id, args.version, args.destination, program_id=args.program_id, template_profile=ProjectTemplateProfile(args.template))
         _emit({"ok": True, "command": "project create", "result": receipt})
         return 0
     if args.project_command == "doctor":
-        report = doctor_project(args.project_root)
+        report = project_experience.doctor(args.project_root)
         _emit({"ok": report.ready, "command": "project doctor", "result": report}, stream=None if report.ready else sys.stderr)
         return 0 if report.ready else 4
     if args.project_command == "test":
-        receipt = test_project(args.project_root)
+        receipt = project_experience.test(args.project_root)
         _emit({"ok": receipt.passed, "command": "project test", "result": receipt}, stream=None if receipt.passed else sys.stderr)
         return 0 if receipt.passed else 4
     raise ValueError(f"unsupported project command: {args.project_command}")
@@ -141,6 +141,7 @@ def run_research_cli(
     *,
     diagnose_main: ResearchCliDelegate,
     manage_main: ResearchCliDelegate,
+    project_experience: ProjectFacade,
 ) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     if raw_argv and raw_argv[0] == "diagnose":
@@ -150,7 +151,7 @@ def run_research_cli(
     args = build_research_parser().parse_args(raw_argv)
     try:
         if args.command == "project":
-            return _run_project(args)
+            return _run_project(args, project_experience)
         return _run_application(args)
     except ResearchOperationFailure as exc:
         _emit({"ok": False, "command": args.command, "result": exc.result}, stream=sys.stderr)

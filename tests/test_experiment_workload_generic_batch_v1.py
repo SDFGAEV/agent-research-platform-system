@@ -6,12 +6,14 @@ import pytest
 
 from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult, Observation
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec, FailureScope
-from noetrium_platform.research.experimentation.workload import (
-    GenericWorkloadBatchExecutor,
-    GenericWorkloadTaskRunner,
+from noetrium_platform.research.experimentation.workload.api import (
     WorkloadBatchResult,
     WorkloadDecision,
     WorkloadTaskResult,
+)
+from noetrium_platform.research.experimentation.workload.runtime import (
+    GenericWorkloadBatchExecutor,
+    GenericWorkloadTaskRunner,
 )
 from noetrium_platform.capabilities.participant.method.api import MethodTaskCompletionReceipt, RecallResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext

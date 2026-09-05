@@ -22,7 +22,7 @@ def _source_file_count_at_least(source_index: RepositorySourceIndexPort, thresho
 def _architecture_lane(
     root_text: str, source_index: RepositorySourceIndexPort, git_executable: str | None = None
 ) -> tuple[str, bool]:
-    from noetrium_platform.foundation.governance.architecture import build_architecture_report
+    from noetrium_platform.foundation.governance.architecture.composition import build_architecture_report
 
     architecture = build_architecture_report(
         Path(root_text), source_index=source_index, git_executable=git_executable

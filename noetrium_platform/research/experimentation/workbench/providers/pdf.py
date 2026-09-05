@@ -112,6 +112,38 @@ class PdfFigureRenderer(FigureRendererPort):
             y = bottom - (rows.index(cell.row) + 1) * cell_h
             self._rect(out, color, x, figure.height - y - cell_h, cell_w, cell_h)
             self._text(out, figure, x + 3, y + cell_h / 2, f"{value:g}", 8)
+    def _render_series(
+        self,
+        out: list[str],
+        figure: FigureSpec,
+        series: object,
+        plot: tuple[float, float, float, float],
+        x_low: float,
+        x_high: float,
+        y_low: float,
+        y_high: float,
+        categories: dict[str, float],
+        index: int,
+    ) -> None:
+        left, top, right, bottom = plot
+        scale_x = (right - left) / (x_high - x_low)
+        scale_y = (bottom - top) / (y_high - y_low)
+        color = figure.style.palette[index % len(figure.style.palette)]
+        points: list[tuple[float, float]] = []
+        numeric_x = self._numeric([item.x for item in series.points])
+        for point in series.points:
+            x = float(point.x) if numeric_x else categories[str(point.x)]
+            y = float(point.y)
+            px, py = left + (x - x_low) * scale_x, bottom - (y - y_low) * scale_y
+            points.append((px, figure.height - py))
+            if point.error_low is not None and point.error_high is not None:
+                low_y = figure.height - (bottom - (float(point.error_low) - y_low) * scale_y)
+                high_y = figure.height - (bottom - (float(point.error_high) - y_low) * scale_y)
+                self._line(out, color, 0.8, (px, low_y), (px, high_y))
+            self._rect(out, color, px - 2.2, figure.height - py - 2.2, 4.4, 4.4)
+        self._line(out, color, figure.style.line_width, *points)
+        self._text(out, figure, right - 110, top + 14 + index * 15, series.name, figure.style.legend_size)
+
     def render(self, figure: FigureSpec, *, output_format: FigureOutputFormat = FigureOutputFormat.PDF) -> str:
         if type(output_format) is not FigureOutputFormat:
             raise TypeError("output_format must be FigureOutputFormat")
@@ -130,23 +162,19 @@ class PdfFigureRenderer(FigureRendererPort):
         x_low, x_high, y_low, y_high, categories = self._plot_points(figure)
         self._axes(out, figure, plot, x_low, x_high, y_low, y_high)
         left, top, right, bottom = plot
-        scale_x = (right - left) / (x_high - x_low)
-        scale_y = (bottom - top) / (y_high - y_low)
         for index, series in enumerate(figure.series):
-            color = figure.style.palette[index % len(figure.style.palette)]
-            points: list[tuple[float, float]] = []
-            for point in series.points:
-                x = float(point.x) if self._numeric([item.x for item in series.points]) else categories[str(point.x)]
-                y = float(point.y)
-                px, py = left + (x - x_low) * scale_x, bottom - (y - y_low) * scale_y
-                points.append((px, figure.height - py))
-                if point.error_low is not None and point.error_high is not None:
-                    low_y = figure.height - (bottom - (float(point.error_low) - y_low) * scale_y)
-                    high_y = figure.height - (bottom - (float(point.error_high) - y_low) * scale_y)
-                    self._line(out, color, 0.8, (px, low_y), (px, high_y))
-                self._rect(out, color, px - 2.2, figure.height - py - 2.2, 4.4, 4.4)
-            self._line(out, color, figure.style.line_width, *points)
-            self._text(out, figure, right - 110, top + 14 + index * 15, series.name, figure.style.legend_size)
+            self._render_series(
+                out,
+                figure,
+                series,
+                plot,
+                x_low,
+                x_high,
+                y_low,
+                y_high,
+                categories,
+                index,
+            )
         if figure.kind in {FigureKind.ROC, FigureKind.CALIBRATION}:
             self._line(out, figure.style.grid, 0.8, (left, figure.height - bottom), (right, figure.height - top))
         return _document(out, figure.width, figure.height)

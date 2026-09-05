@@ -47,6 +47,84 @@ def _derived_table(table: DataTable, operation_id: str, configuration_digest: st
     )
 
 
+def _group_rows(
+    rows: tuple[tuple[Any, ...], ...],
+    group_indexes: tuple[int, ...],
+) -> tuple[tuple[tuple[str, ...], tuple[tuple[Any, ...], ...]], ...]:
+    grouped: dict[tuple[str, ...], list[tuple[Any, ...]]] = defaultdict(list)
+    for row in rows:
+        grouped[tuple(repr(freeze_json(row[index])) for index in group_indexes)].append(row)
+    return tuple(sorted(grouped.items(), key=lambda item: item[0]))
+
+
+def _aggregate_value(
+    rows: tuple[tuple[Any, ...], ...],
+    spec: AggregationSpec,
+    source_index: int | None,
+    missing: MissingValuePolicy,
+) -> Any:
+    if spec.function is AggregationFunction.COUNT:
+        return len(rows)
+    source_values = (
+        (row[source_index] for row in rows)
+        if source_index is not None
+        else rows
+    )
+    numeric: list[float] = []
+    for value in source_values:
+        if value is None and missing is MissingValuePolicy.SKIP:
+            continue
+        numeric.append(_numeric(value, spec.source_column or spec.output_name))
+    if not numeric:
+        if missing is MissingValuePolicy.REJECT:
+            raise ValueError(f"aggregate column {spec.source_column!r} has no usable values")
+        return None
+    mean_value = sum(numeric) / len(numeric)
+    if spec.function is AggregationFunction.SUM:
+        return sum(numeric)
+    if spec.function is AggregationFunction.MEAN:
+        return mean_value
+    if spec.function is AggregationFunction.VARIANCE:
+        return sum((value - mean_value) ** 2 for value in numeric) / (len(numeric) - 1) if len(numeric) > 1 else 0.0
+    if spec.function is AggregationFunction.STANDARD_DEVIATION:
+        return math.sqrt(sum((value - mean_value) ** 2 for value in numeric) / (len(numeric) - 1)) if len(numeric) > 1 else 0.0
+    if spec.function is AggregationFunction.MINIMUM:
+        return min(numeric)
+    if spec.function is AggregationFunction.MEDIAN:
+        return median(numeric)
+    if spec.function is AggregationFunction.MAXIMUM:
+        return max(numeric)
+    raise ValueError(f"unsupported aggregation function: {spec.function}")
+
+
+def _join_key(row: tuple[Any, ...], indexes: tuple[int, ...]) -> tuple[str, ...]:
+    return tuple(repr(freeze_json(row[index])) for index in indexes)
+
+
+def _join_index(
+    rows: tuple[tuple[Any, ...], ...],
+    indexes: tuple[int, ...],
+) -> dict[tuple[str, ...], list[tuple[Any, ...]]]:
+    index: dict[tuple[str, ...], list[tuple[Any, ...]]] = defaultdict(list)
+    for row in rows:
+        index[_join_key(row, indexes)].append(row)
+    return index
+
+
+def _join_rows(
+    left_row: tuple[Any, ...],
+    matches: list[tuple[Any, ...]],
+    right_only: tuple[tuple[int, DataColumn], ...],
+    how: str,
+) -> tuple[tuple[Any, ...], ...]:
+    if not matches and how == "left":
+        return (left_row + tuple(None for _ in right_only),)
+    return tuple(
+        left_row + tuple(right_row[index] for index, _ in right_only)
+        for right_row in matches
+    )
+
+
 class TablePipeline:
     """Composable transformations with explicit implementation/configuration lineage."""
 
@@ -206,56 +284,28 @@ class TablePipeline:
         if type(missing) is not MissingValuePolicy:
             raise TypeError("aggregate missing must be MissingValuePolicy")
         group_indexes = tuple(table.column_index(name) for name in group_by)
-        for spec in aggregations:
-            if spec.source_column is not None:
-                table.column_index(spec.source_column)
-        grouped: dict[tuple[str, ...], list[tuple[Any, ...]]] = defaultdict(list)
-        for row in table.rows:
-            grouped[tuple(repr(freeze_json(row[index])) for index in group_indexes)].append(row)
-        ordered_groups = sorted(grouped.items(), key=lambda item: item[0])
-        columns = tuple(table.columns[table.column_index(name)] for name in group_by)
+        source_indexes = tuple(
+            None if spec.source_column is None else table.column_index(spec.source_column)
+            for spec in aggregations
+        )
+        ordered_groups = _group_rows(table.rows, group_indexes)
+        columns = tuple(table.columns[index] for index in group_indexes)
         output_columns = tuple(DataColumn(spec.output_name, spec.data_type, False) for spec in aggregations)
         output_rows: list[tuple[Any, ...]] = []
         for _, rows in ordered_groups:
             group_values = tuple(rows[0][index] for index in group_indexes)
-            values: list[Any] = []
-            for spec in aggregations:
-                source_values = [row[table.column_index(spec.source_column)] for row in rows] if spec.source_column else list(rows)
-                numeric = []
-                for value in source_values:
-                    if spec.function is AggregationFunction.COUNT:
-                        continue
-                    if value is None and missing is MissingValuePolicy.SKIP:
-                        continue
-                    numeric.append(_numeric(value, spec.source_column or spec.output_name))
-                fn = spec.function
-                if fn is AggregationFunction.COUNT:
-                    values.append(len(rows))
-                elif not numeric:
-                    if missing is MissingValuePolicy.REJECT:
-                        raise ValueError(f"aggregate column {spec.source_column!r} has no usable values")
-                    values.append(None)
-                elif fn is AggregationFunction.SUM:
-                    values.append(sum(numeric))
-                elif fn is AggregationFunction.MEAN:
-                    values.append(sum(numeric) / len(numeric))
-                elif fn is AggregationFunction.VARIANCE:
-                    mean_value = sum(numeric) / len(numeric)
-                    values.append(sum((value - mean_value) ** 2 for value in numeric) / (len(numeric) - 1) if len(numeric) > 1 else 0.0)
-                elif fn is AggregationFunction.STANDARD_DEVIATION:
-                    mean_value = sum(numeric) / len(numeric)
-                    values.append(math.sqrt(sum((value - mean_value) ** 2 for value in numeric) / (len(numeric) - 1)) if len(numeric) > 1 else 0.0)
-                elif fn is AggregationFunction.MINIMUM:
-                    values.append(min(numeric))
-                elif fn is AggregationFunction.MEDIAN:
-                    values.append(median(numeric))
-                elif fn is AggregationFunction.MAXIMUM:
-                    values.append(max(numeric))
-                else:
-                    raise ValueError(f"unsupported aggregation function: {fn}")
-            output_rows.append(group_values + tuple(values))
-        return _derived_table(table, operation_id, configuration_digest,
-                              columns + output_columns, tuple(output_rows))
+            values = tuple(
+                _aggregate_value(rows, spec, source_index, missing)
+                for spec, source_index in zip(aggregations, source_indexes, strict=True)
+            )
+            output_rows.append(group_values + values)
+        return _derived_table(
+            table,
+            operation_id,
+            configuration_digest,
+            columns + output_columns,
+            tuple(output_rows),
+        )
 
     def join(self, left: DataTable, right: DataTable, on: tuple[str, ...], *,
              operation_id: str, configuration_digest: str, how: str = "inner") -> DataTable:
@@ -268,17 +318,18 @@ class TablePipeline:
         right_only = tuple((index, column) for index, column in enumerate(right.columns) if column.name not in on)
         if any(column.name in left.column_names for _, column in right_only):
             raise ValueError("join output columns must be unique")
-        index: dict[tuple[str, ...], list[tuple[Any, ...]]] = defaultdict(list)
-        for row in right.rows:
-            index[tuple(repr(freeze_json(row[i])) for i in right_indexes)].append(row)
+        index = _join_index(right.rows, right_indexes)
         columns = left.columns + tuple(column for _, column in right_only)
         rows: list[tuple[Any, ...]] = []
         for left_row in left.rows:
-            matches = index.get(tuple(repr(freeze_json(left_row[i])) for i in left_indexes), [])
-            if not matches and how == "left":
-                rows.append(left_row + tuple(None for _ in right_only))
-            for right_row in matches:
-                rows.append(left_row + tuple(right_row[index] for index, _ in right_only))
+            rows.extend(
+                _join_rows(
+                    left_row,
+                    index.get(_join_key(left_row, left_indexes), []),
+                    right_only,
+                    how,
+                )
+            )
         return _derived_table(left, operation_id, configuration_digest, columns, tuple(rows),
                               additional_lineage=(right.table_digest,))
 

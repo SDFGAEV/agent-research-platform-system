@@ -53,6 +53,32 @@ _T = TypeVar("_T")
 _R = TypeVar("_R")
 
 
+def _pending_variant_assignments(
+    units: tuple[StudyExecutionUnit, ...],
+    offsets: dict[str, int],
+    variant_limit: int,
+) -> tuple[tuple[StudyExecutionUnit, StudyAssignment], ...]:
+    pending: list[tuple[StudyExecutionUnit, StudyAssignment]] = []
+    for unit in units:
+        offset = offsets[unit.unit_digest]
+        for assignment in unit.assignments[offset : offset + variant_limit]:
+            pending.append((unit, assignment))
+    return tuple(pending)
+
+
+def _collect_variant_results(
+    pending: tuple[tuple[StudyExecutionUnit, StudyAssignment], ...],
+    results: tuple[StudyMetricObservation, ...],
+    collected: dict[str, list[StudyMetricObservation]],
+    offsets: dict[str, int],
+    variant_limit: int,
+) -> None:
+    for (unit, _assignment), observation in zip(pending, results, strict=True):
+        collected[unit.unit_digest].append(observation)
+    for unit in {item[0] for item in pending}:
+        offsets[unit.unit_digest] += variant_limit
+
+
 class StudyMatrixExecutor:
     """Run every declared assignment through one injected environment adapter.
 
@@ -195,27 +221,28 @@ class StudyMatrixExecutor:
                 unit.unit_digest: [] for unit in active_units
             }
             while True:
-                pending: list[tuple[StudyExecutionUnit, StudyAssignment]] = []
-                for unit in active_units:
-                    offset = offsets[unit.unit_digest]
-                    pending.extend(
-                        (unit, assignment)
-                        for assignment in unit.assignments[offset : offset + variant_limit]
-                    )
+                pending = _pending_variant_assignments(
+                    active_units,
+                    offsets,
+                    variant_limit,
+                )
                 if not pending:
                     break
                 results = self._execute_bounded(
-                    tuple(pending),
+                    pending,
                     lambda item: execute_variant(item[1]),
                     parallelism=len(pending),
                     timeout_seconds=protocol.concurrency_policy.repetition_timeout_seconds,
                     task_id_prefix=f"study-variant:{protocol.study_id}",
                     failure_message=f"parallel study variant batch failed: study={protocol.study_id}",
                 )
-                for (unit, _assignment), observation in zip(pending, results, strict=True):
-                    collected[unit.unit_digest].append(observation)
-                for unit in active_units:
-                    offsets[unit.unit_digest] += variant_limit
+                _collect_variant_results(
+                    pending,
+                    results,
+                    collected,
+                    offsets,
+                    variant_limit,
+                )
             completed.extend(
                 (unit, tuple(collected[unit.unit_digest])) for unit in active_units
             )

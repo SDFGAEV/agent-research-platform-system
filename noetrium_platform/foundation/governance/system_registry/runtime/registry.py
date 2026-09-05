@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 from collections import deque
+import hashlib
 
 from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor, SystemIdentity
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+
+
+def _topology_digest(descriptors: tuple[SystemDescriptor, ...]) -> str:
+    """Fingerprint the registry's ordered descriptor snapshot without kernel coupling."""
+
+    payload = "\n".join(repr(descriptor) for descriptor in descriptors)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 class SystemRegistryConflict(RuntimeError):
@@ -21,7 +28,7 @@ class InMemorySystemRegistry:
         self._items: dict[str, SystemDescriptor] = {}
         self._children: dict[str, set[str]] = {}
         self._generation = 0
-        self._topology_digest: str | None = canonical_digest(())
+        self._topology_digest: str | None = _topology_digest(())
 
     @property
     def generation(self) -> int:
@@ -34,7 +41,7 @@ class InMemorySystemRegistry:
         """Lazily compute the canonical descriptor digest once per generation."""
 
         if self._topology_digest is None:
-            self._topology_digest = canonical_digest(self.list())
+            self._topology_digest = _topology_digest(self.list())
         return self._topology_digest
 
     def register(self, descriptor: SystemDescriptor) -> None:

@@ -1362,13 +1362,13 @@
     },
     {
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/__init__.py",
-      "sha256": "bc13ce85401967b12ece6adcb9b91c9ca2f896eb9e4be01329ecdedf0c06336d",
-      "size": 208
+      "sha256": "fbd2827e3163fbdd64f629dcd05c9279a07c9d8c11808007bd5389f75a09d10b",
+      "size": 320
     },
     {
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
-      "sha256": "6095685b8c489d91dfb9f61f423babeb304fe618be6e4b0250551ccfad7db534",
-      "size": 6211
+      "sha256": "cf1768cde45b160bcc4241e1dbb12b8cc73adec7462ed14346b5b752db98f3f4",
+      "size": 16669
     },
     {
       "path": "noetrium_platform/capabilities/environment/composition/__init__.py",
@@ -4102,8 +4102,8 @@
     },
     {
       "path": "noetrium_platform/composition/platform_meta.py",
-      "sha256": "dc4eba5f8cbc8ff6a7500f721c15d0a3b69b188a03600425f57d4fbc9180134f",
-      "size": 6725
+      "sha256": "4e0ec90b387128c51d9958d40d9470e7772a54a5f9e2798a527d80aebdc29ae2",
+      "size": 7517
     },
     {
       "path": "noetrium_platform/composition/prompt_registry.py",
@@ -9762,8 +9762,8 @@
     },
     {
       "path": "noetrium_platform/infrastructure/reliability/diagnostics/runtime/__init__.py",
-      "sha256": "fa611533cd21589870cf78344c1b4eeca85d5336759a8aac05f2e0272269367a",
-      "size": 992
+      "sha256": "8a71e553195e99908ae92dc4da9b3d9e528e37846c7271afac6587b2827b86b2",
+      "size": 1056
     },
     {
       "path": "noetrium_platform/infrastructure/reliability/diagnostics/runtime/causal_contracts.py",
@@ -9807,8 +9807,8 @@
     },
     {
       "path": "noetrium_platform/infrastructure/reliability/diagnostics/runtime/runtime_recovery.py",
-      "sha256": "02c72f1b497b04ee99b55b904c20a3c32b75b25a8967e01d124f6b227ccaa043",
-      "size": 762
+      "sha256": "d4035949d48903a3d06eb36d0df5772e3a9b1bc095ab25c90ac045d57d156872",
+      "size": 2240
     },
     {
       "path": "noetrium_platform/infrastructure/reliability/diagnostics/runtime/runtime_recovery_classifier.py",
@@ -10522,18 +10522,18 @@
     },
     {
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/__init__.py",
-      "sha256": "4263cb72a90ac760adc8eb2063c83430f8f4a3cd359773b96c4201ecb8fda560",
-      "size": 163
+      "sha256": "85ff5c9b73093c28bab927e2e760f12e75159408f79ec196bc8d0f0efa19f43b",
+      "size": 282
     },
     {
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/inventory.py",
-      "sha256": "bc6e2678759cea9f4a19bc26a9c3d2af3d230432e34873be1e4c55a7be0dc802",
-      "size": 2362
+      "sha256": "79dc6f70101f340377f30a8050d071e31d0f4797413dd09522001044c2866993",
+      "size": 8902
     },
     {
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "sha256": "9977fa1abfed71d7cec993e15d5137df64082f2b64618ee3f6dcc841bfc2f5c1",
-      "size": 5530
+      "sha256": "eb5eccd140b2ba74d88c079bc824b8fcb6283416464b65cb31e3313994c9c166",
+      "size": 12418
     },
     {
       "path": "noetrium_platform/infrastructure/resources/directory/__init__.py",
@@ -12302,13 +12302,13 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/catalog/runtime/__init__.py",
-      "sha256": "a9d7443448b7aed802fd82ce675a3564173ff63febc92ff017db709923793583",
-      "size": 230
+      "sha256": "40a5a4d25f6b1f01acc218294c1e921d9c5eab1fe843f63ca111ae79991a0c07",
+      "size": 332
     },
     {
       "path": "noetrium_platform/research/experimentation/catalog/runtime/catalog.py",
-      "sha256": "46e381056d0d5ad3dbd22712faa2a79a564922da5ca2f00e44615209f1002744",
-      "size": 3383
+      "sha256": "eeb5ea30c219fdd9e5387944e9776c688c9e084bd28cedb2ec79aa606d3cf4bc",
+      "size": 12096
     },
     {
       "path": "noetrium_platform/research/experimentation/checkpoint/__init__.py",
@@ -13827,8 +13827,8 @@
     },
     {
       "path": "tests/test_durable_resource_authorities_v1.py",
-      "sha256": "d9661460295c7c35d411dc222bc0201a4b952769facd1b25166beef83e2b9c70",
-      "size": 5726
+      "sha256": "e247c0ca15ead6b266b94560c271efccde3595b57a3d526de7a5a29a9552a844",
+      "size": 10036
     },
     {
       "path": "tests/test_durable_resource_directory_v1.py",
@@ -14937,8 +14937,8 @@
     },
     {
       "path": "tests/test_runtime_recovery_decision_v170.py",
-      "sha256": "9f010dc2db80c488703ad0eadee2ba6bf1baf0fbc4f149267fc698134635f332",
-      "size": 4150
+      "sha256": "fcbcbea717d6bf9825b3f098bfa63ae8f6266ed5f457212b4d780b58aa26b30d",
+      "size": 4955
     },
     {
       "path": "tests/test_runtime_scaffold_contraction_v1.py",
@@ -15579,5 +15579,5 @@
   "platform_code_version": "0.44.0",
   "python_requires": ">=3.11",
   "schema_version": 1,
-  "source_tree_sha256": "25dab9bfc4a356d521a305faac3e6b7b507a546eaa8c69c025b0fe5dbf42158c"
+  "source_tree_sha256": "65a7bdd07c4e78e787cd37437c06cf4fd3cd349b61366b96110c99380f568062"
 }

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
+from typing import cast
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
 from noetrium_platform.evidence.artifact.catalog.runtime import InMemoryArtifactRegistry
+from noetrium_platform.evidence.artifact.catalog.providers import SQLiteArtifactRegistry
 from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegistry
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
@@ -125,8 +128,13 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
         portfolio=SQLitePortfolioCatalog(database, scopes),
         experimentation=InMemoryExperimentationCatalog(scopes),
         environments=ExecutionEnvironmentCatalog(scopes),
-        artifacts=InMemoryArtifactRegistry(),
-        datasets=InMemoryDatasetRegistry(),
+        artifacts=SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
+        datasets=cast(
+            DatasetRegistryPort,
+            import_module(
+                "noetrium_platform.evidence.data.dataset.providers.sqlite"
+            ).SQLiteDatasetRegistry(root / "platform-datasets.sqlite"),
+        ),
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,

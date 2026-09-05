@@ -5,7 +5,7 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.study.api import (
-    AnalysisDefinition, AnalysisResult, BenchmarkTaskSet, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
+    AnalysisDefinition, AnalysisResult, BenchmarkTaskSet, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
     MeasurementRecord, MeasurementValue, MeasurementValueKind, ParticipantSchedule, ResearchRevision, ResearchStudyDefinition, StudyFactorSpec, StudyIntervention,
     TaskDefinition, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit, TrialBudget, TrialExecutionReceipt, TrialExecutionRequest, TrialMatrixExecutionReport, TrialProviderPort,
 )
@@ -52,6 +52,11 @@ __all__ = [
     "AnalysisDefinition",
     "AnalysisResult",
     "BenchmarkTaskSet",
+    "BenchmarkSourceKind",
+    "BenchmarkSourcePort",
+    "BenchmarkSourceResolution",
+    "BenchmarkSourceSpec",
+    "InMemoryBenchmarkSource",
     "MeasurementContentReference",
     "MeasurementCut",
     "TaskDefinition",

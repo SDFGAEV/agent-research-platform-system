@@ -1,5 +1,26 @@
 from __future__ import annotations
 
+from noetrium_platform.research.experimentation.experiment.api.contracts import (
+    canonical_digest, require_sha256,
+    ExperimentDefinition as UniversalExperimentDefinition,
+    ExperimentDoctorPort,
+    ExperimentLifecycleState as UniversalExperimentLifecycleState,
+    ExperimentPlan as UniversalExperimentPlan,
+    ExperimentRunReport as UniversalExperimentRunReport,
+    ExperimentTransition as UniversalExperimentTransition,
+    ExperimentUnit as UniversalExperimentUnit,
+    ExperimentUnitExecutorPort as UniversalExperimentUnitExecutorPort,
+    ExperimentUnitKind as UniversalExperimentUnitKind,
+    FindingSeverity as UniversalFindingSeverity,
+    ObservationEnvelope as UniversalObservationEnvelope,
+    ObservationKind as UniversalObservationKind,
+    ObservationSinkPort as UniversalObservationSinkPort,
+    DoctorFinding as UniversalDoctorFinding,
+    UnitOutcome as UniversalUnitOutcome,
+    UnitOutcomeState as UniversalUnitOutcomeState,
+)
+from dataclasses import dataclass
+
 from collections import defaultdict
 from collections.abc import Callable
 from typing import TypeVar
@@ -27,6 +48,50 @@ from ..api import (
 )
 from .protocol import DeterministicStudyAssignment
 
+class StudyMatrixUniversalProjection:
+    """Project matrix assignments into family-neutral experiment units.
+
+    The projection deliberately preserves assignment identity and does not
+    expose benchmark/task assumptions to the universal planner.
+    """
+
+    @staticmethod
+    def plan(
+        experiment_id: str,
+        definition_digest: str,
+        assignments: tuple[StudyAssignment, ...],
+    ) -> UniversalExperimentPlan:
+        if type(experiment_id) is not str or not experiment_id.strip():
+            raise ValueError("experiment_id must be non-empty")
+        require_sha256(definition_digest, "definition_digest")
+        if type(assignments) is not tuple or not assignments:
+            raise ValueError("assignments must be a non-empty tuple")
+        if any(not isinstance(item, StudyAssignment) for item in assignments):
+            raise TypeError("assignments must contain StudyAssignment")
+        units = tuple(
+            UniversalExperimentUnit(
+                unit_id=f"assignment:{item.assignment_digest}",
+                kind=UniversalExperimentUnitKind.TASK if item.task_id is not None else UniversalExperimentUnitKind.GENERIC,
+                input_digest=canonical_digest({
+                    "task_id": item.task_id,
+                    "study_id": item.study_id,
+                }),
+                condition_digest=canonical_digest({
+                    "variant_id": item.variant_id,
+                    "repetition": item.repetition,
+                }),
+                seed=item.seed,
+                ordinal=ordinal,
+            )
+            for ordinal, item in enumerate(assignments)
+        )
+        return UniversalExperimentPlan(
+            experiment_id=experiment_id,
+            definition_digest=definition_digest,
+            units=units,
+            planner_id="study-matrix-universal-projection-v1",
+        )
+
 
 def _study_units(
     protocol: StudyProtocol,
@@ -45,7 +110,7 @@ def _study_units(
     )
 
 
-def _binding_index(plan: ExperimentPlan) -> dict[str, VariantBinding]:
+def _binding_index(plan: UniversalExperimentPlan) -> dict[str, VariantBinding]:
     return {item.variant.variant_id: item for item in plan.bindings}
 
 
@@ -279,7 +344,7 @@ class StudyMatrixExecutor:
 
     def execute_plan(
         self,
-        plan: ExperimentPlan,
+        plan: UniversalExperimentPlan,
         assignments: tuple[StudyAssignment, ...],
         adapter: BoundStudyUnitExecutionPort,
     ) -> StudyMatrixExecutionReport:
@@ -370,4 +435,195 @@ class StudyMatrixExecutor:
             raise ValueError("study assignment matrix is not exactly the declared protocol")
 
 
-__all__ = ["StudyMatrixExecutor"]
+class StaticUnitPlanner:
+    """Reference planner; family-specific planners can implement the same port."""
+
+    def plan(self, definition: UniversalExperimentDefinition, units: tuple[UniversalExperimentUnit, ...]) -> UniversalExperimentPlan:
+        if any(unit.kind is not definition.unit_kind for unit in units):
+            raise ValueError("unit kind does not match experiment definition")
+        return UniversalExperimentPlan(definition.experiment_id, definition.definition_digest, units)
+
+
+class InMemoryObservationLedger(UniversalObservationSinkPort):
+    """Strict ordered ledger used by tests and small local runs."""
+
+    def __init__(self) -> None:
+        self._observations: list[UniversalObservationEnvelope] = []
+        self._last_sequence: dict[tuple[str, str], int] = {}
+
+    def append(self, observation: UniversalObservationEnvelope) -> None:
+        key = (observation.run_id, observation.unit_id)
+        last = self._last_sequence.get(key, -1)
+        if observation.sequence != last + 1:
+            raise ValueError(f"observation sequence gap or duplicate for {key!r}")
+        self._last_sequence[key] = observation.sequence
+        self._observations.append(observation)
+
+    def snapshot(self) -> tuple[UniversalObservationEnvelope, ...]:
+        return tuple(self._observations)
+
+
+@dataclass(frozen=True, slots=True)
+class DoctorReport:
+    findings: tuple[UniversalDoctorFinding, ...]
+
+    @property
+    def healthy(self) -> bool:
+        return not any(item.blocking for item in self.findings)
+
+
+class ExperimentDoctor(ExperimentDoctorPort):
+    def inspect(self, plan: UniversalExperimentPlan, observations: tuple[UniversalObservationEnvelope, ...]) -> tuple[UniversalDoctorFinding, ...]:
+        expected = {unit.unit_id for unit in plan.units}
+        seen = {item.unit_id for item in observations}
+        findings: list[UniversalDoctorFinding] = []
+        for unit_id in sorted(expected - seen):
+            findings.append(UniversalDoctorFinding(
+                "unit.missing", UniversalFindingSeverity.ERROR, unit_id,
+                "planned experiment unit produced no observation",
+                blocking=True, recovery_action="retry_unit",
+            ))
+        unknown = sorted(seen - expected)
+        for unit_id in unknown:
+            findings.append(UniversalDoctorFinding(
+                "unit.unknown", UniversalFindingSeverity.CRITICAL, unit_id,
+                "observation references a unit absent from the frozen plan",
+                blocking=True,
+            ))
+        by_stream: dict[tuple[str, str], list[UniversalObservationEnvelope]] = {}
+        for item in observations:
+            if item.experiment_id != plan.experiment_id:
+                findings.append(UniversalDoctorFinding(
+                    "observation.experiment_mismatch", UniversalFindingSeverity.CRITICAL,
+                    item.unit_id, "observation belongs to another experiment",
+                    blocking=True,
+                ))
+            by_stream.setdefault((item.run_id, item.unit_id), []).append(item)
+        seen_digests: set[str] = set()
+        for stream, items in by_stream.items():
+            sequences = sorted(item.sequence for item in items)
+            if len(sequences) != len(set(sequences)):
+                findings.append(UniversalDoctorFinding(
+                    "observation.duplicate_sequence", UniversalFindingSeverity.ERROR,
+                    stream[1], "observation stream contains duplicate sequence numbers",
+                    blocking=True, recovery_action="deduplicate_stream",
+                ))
+            expected_sequences = list(range(len(sequences)))
+            if sequences != expected_sequences:
+                findings.append(UniversalDoctorFinding(
+                    "observation.sequence_gap", UniversalFindingSeverity.ERROR,
+                    stream[1], "observation stream is not contiguous from sequence zero",
+                    blocking=True, recovery_action="replay_missing_events",
+                ))
+            for item in items:
+                if item.observation_digest in seen_digests:
+                    findings.append(UniversalDoctorFinding(
+                        "observation.duplicate", UniversalFindingSeverity.ERROR,
+                        item.unit_id, "duplicate observation digest detected",
+                        blocking=True, recovery_action="deduplicate_stream",
+                    ))
+                seen_digests.add(item.observation_digest)
+        return tuple(findings)
+
+    def report(self, plan: UniversalExperimentPlan, observations: tuple[UniversalObservationEnvelope, ...]) -> DoctorReport:
+        return DoctorReport(self.inspect(plan, observations))
+
+
+class ExperimentLifecycle:
+    _ALLOWED = {
+        UniversalExperimentLifecycleState.DECLARED: {UniversalExperimentLifecycleState.RESOLVED, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.RESOLVED: {UniversalExperimentLifecycleState.FROZEN, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.FROZEN: {UniversalExperimentLifecycleState.PLANNED, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.PLANNED: {UniversalExperimentLifecycleState.RUNNING, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.RUNNING: {UniversalExperimentLifecycleState.PAUSED, UniversalExperimentLifecycleState.COMPLETED, UniversalExperimentLifecycleState.PARTIAL, UniversalExperimentLifecycleState.FAILED, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.PAUSED: {UniversalExperimentLifecycleState.RESUMING, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.RESUMING: {UniversalExperimentLifecycleState.RUNNING, UniversalExperimentLifecycleState.FAILED},
+        UniversalExperimentLifecycleState.PARTIAL: {UniversalExperimentLifecycleState.RESUMING, UniversalExperimentLifecycleState.COMPLETED, UniversalExperimentLifecycleState.FAILED},
+        UniversalExperimentLifecycleState.FAILED: {UniversalExperimentLifecycleState.RESUMING, UniversalExperimentLifecycleState.CANCELLED},
+        UniversalExperimentLifecycleState.COMPLETED: set(),
+        UniversalExperimentLifecycleState.CANCELLED: set(),
+    }
+
+    def __init__(self, experiment_id: str) -> None:
+        self.experiment_id = experiment_id
+        self.state = UniversalExperimentLifecycleState.DECLARED
+        self.transitions: list[UniversalExperimentTransition] = []
+
+    def transition(self, target: UniversalExperimentLifecycleState, logical_time: str, reason: str) -> UniversalExperimentTransition:
+        if target not in self._ALLOWED[self.state]:
+            raise ValueError(f"illegal experiment transition {self.state.value}->{target.value}")
+        transition = UniversalExperimentTransition(self.experiment_id, self.state, target, logical_time, reason)
+        self.transitions.append(transition)
+        self.state = target
+        return transition
+
+
+class UniversalExperimentKernel:
+    def __init__(self, planner: StaticUnitPlanner | None = None, doctor: UniversalExperimentDoctor | None = None) -> None:
+        self.planner = planner or StaticUnitPlanner()
+        self.doctor = doctor or ExperimentDoctor()
+
+    def compile(self, definition: UniversalExperimentDefinition, units: tuple[UniversalExperimentUnit, ...]) -> UniversalExperimentPlan:
+        return self.planner.plan(definition, units)
+
+    def inspect(self, plan: UniversalExperimentPlan, observations: tuple[UniversalObservationEnvelope, ...]) -> UniversalDoctorReport:
+        return self.doctor.report(plan, observations)
+
+
+class UniversalExperimentRunner:
+    """Run arbitrary experiment units through one observable control loop."""
+
+    def __init__(self, doctor: UniversalExperimentDoctor | None = None) -> None:
+        self.doctor = doctor or ExperimentDoctor()
+
+    def run(
+        self,
+        plan: UniversalExperimentPlan,
+        run_id: str,
+        executor: UniversalExperimentUnitExecutorPort,
+        ledger: InMemoryObservationLedger | None = None,
+    ) -> UniversalExperimentRunReport:
+        sink = ledger or InMemoryObservationLedger()
+        lifecycle = ExperimentLifecycle(plan.experiment_id)
+        lifecycle.transition(UniversalExperimentLifecycleState.RESOLVED, "run:resolved", "execution dependencies resolved")
+        lifecycle.transition(UniversalExperimentLifecycleState.FROZEN, "run:frozen", "plan identity frozen")
+        lifecycle.transition(UniversalExperimentLifecycleState.PLANNED, "run:planned", "unit plan accepted")
+        lifecycle.transition(UniversalExperimentLifecycleState.RUNNING, "run:running", "execution started")
+        outcomes: list[UniversalUnitOutcome] = []
+        for unit in plan.units:
+            try:
+                outcome = executor.execute_unit(unit, run_id, sink)
+                if outcome.unit_id != unit.unit_id:
+                    raise ValueError("executor returned an outcome for another unit")
+            except Exception as exc:
+                outcome = UniversalUnitOutcome(
+                    unit.unit_id, UniversalUnitOutcomeState.FAILED, 1,
+                    error_code=f"executor.{type(exc).__name__}",
+                )
+            outcomes.append(outcome)
+        observations = sink.snapshot()
+        findings = self.doctor.inspect(plan, observations)
+        failed = any(item.state is not UniversalUnitOutcomeState.SUCCEEDED for item in outcomes)
+        blocked = any(item.blocking for item in findings)
+        terminal = UniversalExperimentLifecycleState.COMPLETED
+        if failed or blocked:
+            terminal = (
+                UniversalExperimentLifecycleState.FAILED
+                if not any(item.state is UniversalUnitOutcomeState.SUCCEEDED for item in outcomes)
+                else UniversalExperimentLifecycleState.PARTIAL
+            )
+        lifecycle.transition(terminal, "run:terminal", "execution and automatic diagnosis completed")
+        return UniversalExperimentRunReport(
+            plan.experiment_id, run_id, plan.plan_digest, terminal,
+            tuple(outcomes), findings,
+        )
+
+
+UniversalExperimentDoctor = ExperimentDoctor
+UniversalDoctorReport = DoctorReport
+
+__all__ = [
+    "StudyMatrixExecutor", "StudyMatrixUniversalProjection", "StaticUnitPlanner",
+    "InMemoryObservationLedger", "DoctorReport", "ExperimentDoctor", "ExperimentLifecycle",
+    "UniversalExperimentKernel", "UniversalExperimentRunner",
+]

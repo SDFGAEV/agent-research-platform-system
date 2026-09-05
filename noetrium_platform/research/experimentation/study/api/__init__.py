@@ -11,7 +11,12 @@ from .contracts import (
 )
 from noetrium_platform.research.experimentation.identity import ReplayLevel
 from .analysis import AnalysisDefinition, AnalysisResult, MeasurementCut
-from .benchmark import BenchmarkTaskSet, TaskDefinition, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit, TrialBudget
+from .benchmark import (
+    BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution,
+    BenchmarkSourceSpec, BenchmarkTaskSet, InMemoryBenchmarkSource,
+    TaskDefinition, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit,
+    TrialBudget,
+)
 from .design import (
     FactorLevelSpec, FactorSelection, ParticipantSchedule, ResearchRevision,
     ResearchStudyDefinition, StudyFactorSpec, StudyIntervention,
@@ -59,6 +64,11 @@ __all__ = [
     "AnalysisResult",
     "MeasurementCut",
     "BenchmarkTaskSet",
+    "BenchmarkSourceKind",
+    "BenchmarkSourcePort",
+    "BenchmarkSourceResolution",
+    "BenchmarkSourceSpec",
+    "InMemoryBenchmarkSource",
     "TaskDefinition",
     "TaskGraph",
     "TaskGraphEdge",

@@ -1,4 +1,11 @@
-from .contracts import ExperimentParticipantSpec, ExperimentSpec
+from .contracts import (
+    AnalysisPlan, DoctorFinding, ExperimentDefinition, ExperimentLifecycleState,
+    ExperimentModePort, ExperimentParticipantSpec, ExperimentPlan,
+    ExperimentRunReport, ExecutionMode, ExperimentTransition, ExperimentUnit,
+    ExperimentUnitExecutorPort, ExperimentUnitKind, ExperimentUnitPlannerPort,
+    ExperimentSpec, FindingSeverity, ObservationEnvelope, ObservationKind,
+    ObservationSinkPort, ExperimentDoctorPort, UnitOutcome, UnitOutcomeState,
+)
 from .ports import ExperimentComponentBindingPort, ExperimentTrialCycleExecutorPort
 from .topology import ExperimentParticipantTopology
 from .trial_protocol import (
@@ -16,7 +23,20 @@ from .tasks import ExperimentTaskSpec, validate_task_graph
 
 __all__ = [
     "ExperimentComponentBindingPort",
+    "AnalysisPlan",
+    "DoctorFinding",
+    "ExperimentDefinition",
+    "ExperimentLifecycleState",
+    "ExperimentModePort",
+    "ExecutionMode",
     "ExperimentParticipantSpec",
+    "ExperimentPlan",
+    "ExperimentRunReport",
+    "ExperimentTransition",
+    "ExperimentUnit",
+    "ExperimentUnitExecutorPort",
+    "ExperimentUnitKind",
+    "ExperimentUnitPlannerPort",
     "ExperimentParticipantTopology",
     "ExperimentTrialCycleExecutorPort",
     "ExperimentTrialProtocol",

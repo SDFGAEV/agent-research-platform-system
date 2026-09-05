@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 import math
+from typing import Protocol
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference, ArtifactReferencePort
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json, require_sha256
 
 _HEX = frozenset("0123456789abcdef")
 
@@ -224,5 +226,97 @@ class BenchmarkTaskSet:
 
 __all__ = [
     "BenchmarkTaskSet", "TaskDefinition", "TaskGraph", "TaskGraphEdge",
-    "TaskGraphRelation", "TaskSetSplit", "TrialBudget",
+    "TaskGraphRelation", "TaskSetSplit", "TrialBudget", "BenchmarkSourceKind",
+    "BenchmarkSourceSpec", "BenchmarkSourceResolution", "BenchmarkSourcePort",
+    "InMemoryBenchmarkSource",
 ]
+class BenchmarkSourceKind(StrEnum):
+    LOCAL_FILE = "local_file"
+    HTTP = "http"
+    GIT = "git"
+    HUGGINGFACE = "huggingface"
+    CUSTOM = "custom"
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkSourceSpec:
+    source_id: str
+    kind: BenchmarkSourceKind
+    revision_id: str
+    locator: str
+    content_digest: str
+    license: str | None = None
+    metadata: Mapping[str, str] = field(default_factory=dict)
+    source_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for name, value in (("source_id", self.source_id), ("revision_id", self.revision_id),
+                            ("locator", self.locator)):
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"benchmark source {name} must be non-empty")
+        if not isinstance(self.kind, BenchmarkSourceKind):
+            raise TypeError("benchmark source kind must be BenchmarkSourceKind")
+        require_sha256(self.content_digest, "benchmark source content_digest")
+        if self.license is not None and (type(self.license) is not str or not self.license.strip()):
+            raise ValueError("benchmark source license must be non-empty when provided")
+        frozen = freeze_json(self.metadata)
+        if not isinstance(frozen, Mapping) or any(type(k) is not str or type(v) is not str for k, v in frozen.items()):
+            raise TypeError("benchmark source metadata must be a string mapping")
+        object.__setattr__(self, "metadata", frozen)
+        object.__setattr__(self, "source_digest", canonical_digest({
+            "source_id": self.source_id, "kind": self.kind.value,
+            "revision_id": self.revision_id, "locator": self.locator,
+            "content_digest": self.content_digest, "license": self.license,
+            "metadata": self.metadata,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkSourceResolution:
+    source: BenchmarkSourceSpec
+    task_set: BenchmarkTaskSet
+    resolution_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.source) is not BenchmarkSourceSpec:
+            raise TypeError("benchmark resolution source must be BenchmarkSourceSpec")
+        if type(self.task_set) is not BenchmarkTaskSet:
+            raise TypeError("benchmark resolution task_set must be BenchmarkTaskSet")
+        if self.task_set.source_digest != self.source.content_digest:
+            raise ValueError("resolved benchmark content digest does not match source")
+        if self.task_set.revision_id != self.source.revision_id:
+            raise ValueError("resolved benchmark revision does not match source")
+        object.__setattr__(self, "resolution_digest", canonical_digest({
+            "source": self.source.source_digest, "task_set": self.task_set.cut_digest,
+        }))
+
+    @property
+    def cut_digest(self) -> str:
+        return self.task_set.cut_digest
+
+
+class BenchmarkSourcePort(Protocol):
+    def resolve(self, source: BenchmarkSourceSpec) -> BenchmarkSourceResolution:
+        ...
+
+
+class InMemoryBenchmarkSource(BenchmarkSourcePort):
+    """Deterministic reference adapter for tests and local composition."""
+
+    def __init__(self) -> None:
+        self._cuts: dict[str, BenchmarkSourceResolution] = {}
+
+    def register(self, source: BenchmarkSourceSpec, task_set: BenchmarkTaskSet) -> BenchmarkSourceResolution:
+        resolution = BenchmarkSourceResolution(source, task_set)
+        key = f"{source.source_id}@{source.revision_id}"
+        if key in self._cuts and self._cuts[key] != resolution:
+            raise ValueError(f"benchmark source revision already registered: {key}")
+        self._cuts[key] = resolution
+        return resolution
+
+    def resolve(self, source: BenchmarkSourceSpec) -> BenchmarkSourceResolution:
+        key = f"{source.source_id}@{source.revision_id}"
+        try:
+            return self._cuts[key]
+        except KeyError as exc:
+            raise KeyError(f"benchmark source revision is not registered: {key}") from exc

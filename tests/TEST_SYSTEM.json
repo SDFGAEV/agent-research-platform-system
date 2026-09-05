@@ -205,6 +205,11 @@
       "family": "scientific-domain"
     },
     {
+      "id": "evolution",
+      "pattern": "^test_topology_evolution_",
+      "family": "composition-integration"
+    },
+    {
       "id": "platform",
       "pattern": "^test_(?:active_(?!release)|artifact_|debug_|event_|final_|forensic_(?!index|read)|io_(?!performance)|kernel_|lifecycle|logging_|low_level_|observability_|one_click_|optimization_|registry_observability_|runtime_small|server_health(?!_entrypoint)|telemetry_|tmux_)",
       "family": "runtime-components"

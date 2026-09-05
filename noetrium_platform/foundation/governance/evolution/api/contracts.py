@@ -230,12 +230,50 @@ class EvolutionAssessment:
         return canonical_digest(self)
 
 
+@dataclass(frozen=True, slots=True)
+class EvolutionTransition:
+    transition_id: str
+    proposal_id: str
+    proposal_digest: str
+    from_stage: EvolutionStage
+    to_stage: EvolutionStage
+    evidence_refs: tuple[str, ...]
+    reason_digest: str
+    decision_contract_id: str
+    decision_implementation_digest: str
+    decision_configuration_digest: str
+    transition_generation: int
+
+    def __post_init__(self) -> None:
+        _text(self.transition_id, "transition_id")
+        _text(self.proposal_id, "proposal_id")
+        _sha256(self.proposal_digest, "proposal_digest")
+        if not isinstance(self.from_stage, EvolutionStage):
+            raise TypeError("from_stage must be EvolutionStage")
+        if not isinstance(self.to_stage, EvolutionStage):
+            raise TypeError("to_stage must be EvolutionStage")
+        if self.from_stage is self.to_stage:
+            raise ValueError("evolution transition must change stage")
+        object.__setattr__(self, "evidence_refs", _refs(self.evidence_refs, "evidence_refs"))
+        if not self.evidence_refs:
+            raise ValueError("evolution transition requires evidence")
+        _sha256(self.reason_digest, "reason_digest")
+        _text(self.decision_contract_id, "decision_contract_id")
+        _sha256(self.decision_implementation_digest, "decision_implementation_digest")
+        _sha256(self.decision_configuration_digest, "decision_configuration_digest")
+        _positive(self.transition_generation, "transition_generation")
+
+    def digest(self) -> str:
+        return canonical_digest(self)
+
+
 __all__ = [
     "DiscoveryReport",
     "DriftKind",
     "EvolutionAssessment",
     "EvolutionProposal",
     "EvolutionStage",
+    "EvolutionTransition",
     "ImprovementSignal",
     "ObservationOutcome",
     "SignalKind",

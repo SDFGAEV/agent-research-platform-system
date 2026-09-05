@@ -7,11 +7,14 @@ from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
     SystemRegistryPort,
 )
+from ..api import EvolutionStateStorePort
 from ..api.contracts import (
     DiscoveryReport,
     DriftKind,
     EvolutionAssessment,
     EvolutionProposal,
+    EvolutionStage,
+    EvolutionTransition,
     ImprovementSignal,
     ObservationOutcome,
     SignalKind,
@@ -33,6 +36,7 @@ class RegistryDrivenEvolutionController:
         self,
         systems: SystemRegistryPort,
         *,
+        store: EvolutionStateStorePort | None = None,
         minimum_samples: int = 3,
         failure_ratio: float = 0.5,
         latency_ratio: float = 1.5,
@@ -47,11 +51,28 @@ class RegistryDrivenEvolutionController:
         if observation_capacity <= 0:
             raise ValueError("observation_capacity must be positive")
         self._systems = systems
+        self._store = store
         self._minimum_samples = minimum_samples
         self._failure_ratio = failure_ratio
         self._latency_ratio = latency_ratio
         self._observations: deque[TopologyObservation] = deque(maxlen=observation_capacity)
+        if store is not None:
+            self._observations.extend(store.observations())
         self._drifts: list[TopologyDrift] = []
+        self._proposals: dict[str, EvolutionProposal] = {}
+        self._stages: dict[str, EvolutionStage] = {}
+        if store is not None:
+            for proposal in store.proposals():
+                self._proposals[proposal.proposal_id] = proposal
+                self._stages[proposal.proposal_id] = proposal.stage
+            for transition in store.transitions():
+                proposal = self._proposals.get(transition.proposal_id)
+                if proposal is None or proposal.digest() != transition.proposal_digest:
+                    raise ValueError("evolution transition references an unknown proposal")
+                current = self._stages[transition.proposal_id]
+                if current is not transition.from_stage:
+                    raise ValueError("evolution transition sequence is not contiguous")
+                self._stages[transition.proposal_id] = transition.to_stage
 
     @property
     def systems(self) -> SystemRegistryPort:
@@ -100,7 +121,7 @@ class RegistryDrivenEvolutionController:
             self._systems.register(descriptor)
             registered.append(key)
 
-        return DiscoveryReport(
+        report = DiscoveryReport(
             source_id=source_id,
             source_digest=source_digest,
             registered=tuple(registered),
@@ -109,10 +130,15 @@ class RegistryDrivenEvolutionController:
             topology_generation=self._systems.generation,
             topology_digest=self._systems.topology_digest,
         )
+        if self._store is not None:
+            self._store.append_discovery(report)
+        return report
 
     def observe(self, observation: TopologyObservation) -> None:
         """Record an observation and turn topology inconsistency into evidence."""
 
+        if self._store is not None:
+            self._store.append_observation(observation)
         try:
             self._systems.validate(observation.system)
         except (KeyError, RuntimeError):
@@ -267,7 +293,7 @@ class RegistryDrivenEvolutionController:
             implementation_digest,
             configuration_digest,
         )
-        return EvolutionProposal(
+        proposal = EvolutionProposal(
             proposal_id=proposal_id,
             signal=signal,
             predecessor_topology_digest=self._systems.topology_digest,
@@ -277,6 +303,77 @@ class RegistryDrivenEvolutionController:
             validation_plan_digest=validation_plan_digest,
             rollback_anchor_digest=rollback_anchor_digest,
         )
+        if self._store is not None:
+            self._store.put_proposal(proposal)
+        self._proposals[proposal.proposal_id] = proposal
+        self._stages[proposal.proposal_id] = proposal.stage
+        return proposal
+
+    def current_stage(self, proposal_id: str) -> EvolutionStage:
+        try:
+            return self._stages[proposal_id]
+        except KeyError as exc:
+            raise KeyError(f"unknown evolution proposal: {proposal_id}") from exc
+
+    def advance(
+        self,
+        proposal_id: str,
+        to_stage: EvolutionStage,
+        *,
+        evidence_refs: tuple[str, ...],
+        reason_digest: str,
+        decision_contract_id: str,
+        decision_implementation_digest: str,
+        decision_configuration_digest: str,
+    ) -> EvolutionTransition:
+        proposal = self._proposals.get(proposal_id)
+        if proposal is None:
+            raise KeyError(f"unknown evolution proposal: {proposal_id}")
+        current = self.current_stage(proposal_id)
+        allowed = {
+            EvolutionStage.PROPOSED: frozenset({
+                EvolutionStage.VALIDATED,
+                EvolutionStage.QUARANTINED,
+            }),
+            EvolutionStage.VALIDATED: frozenset({
+                EvolutionStage.PROMOTED,
+                EvolutionStage.QUARANTINED,
+            }),
+            EvolutionStage.PROMOTED: frozenset({EvolutionStage.ROLLED_BACK}),
+            EvolutionStage.QUARANTINED: frozenset(),
+            EvolutionStage.ROLLED_BACK: frozenset(),
+        }
+        if to_stage not in allowed[current]:
+            raise ValueError(
+                f"illegal evolution transition: {current.value} -> {to_stage.value}"
+            )
+        if (
+            to_stage is EvolutionStage.PROMOTED
+            and proposal.predecessor_topology_digest != self._systems.topology_digest
+        ):
+            raise ValueError("cannot promote against a changed topology")
+        transition = EvolutionTransition(
+            transition_id=_stable_id(
+                proposal.digest(),
+                current.value,
+                to_stage.value,
+                reason_digest,
+            ),
+            proposal_id=proposal.proposal_id,
+            proposal_digest=proposal.digest(),
+            from_stage=current,
+            to_stage=to_stage,
+            evidence_refs=evidence_refs,
+            reason_digest=reason_digest,
+            decision_contract_id=decision_contract_id,
+            decision_implementation_digest=decision_implementation_digest,
+            decision_configuration_digest=decision_configuration_digest,
+            transition_generation=self._systems.generation,
+        )
+        if self._store is not None:
+            self._store.append_transition(transition)
+        self._stages[proposal_id] = to_stage
+        return transition
 
     def _append_drift(self, drift: TopologyDrift) -> None:
         if drift.digest() not in {item.digest() for item in self._drifts}:

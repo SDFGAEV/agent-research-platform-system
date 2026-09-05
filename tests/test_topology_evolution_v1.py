@@ -154,3 +154,206 @@ def test_platform_composition_exposes_evolution_through_a_narrow_port() -> None:
 
     assert meta.evolution.systems is meta.systems
     assert meta.evolution.assess().topology_generation == meta.systems.generation
+
+
+def test_sqlite_evolution_store_rehydrates_observations_and_proposals(tmp_path) -> None:
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        SQLiteEvolutionStore,
+    )
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
+    controller = RegistryDrivenEvolutionController(registry, store=store, minimum_samples=3)
+    system = SystemIdentity("observability", ("logging",))
+    for index in range(3):
+        controller.observe(
+            _observation(controller, system, ObservationOutcome.FAILURE, 0.2, index)
+        )
+    signal = next(
+        item for item in controller.assess().signals if item.kind is SignalKind.FAILURE_CLUSTER
+    )
+    proposal = controller.propose(
+        signal,
+        change_contract_id="persistent.v1",
+        implementation_digest=_digest("implementation"),
+        configuration_digest=_digest("configuration"),
+        validation_plan_digest=_digest("validation"),
+        rollback_anchor_digest=_digest("rollback"),
+    )
+
+    restored_store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
+    restored = RegistryDrivenEvolutionController(
+        registry,
+        store=restored_store,
+        minimum_samples=3,
+    )
+
+    assert len(restored_store.observations()) == 3
+    assert restored_store.proposals() == (proposal,)
+    assert any(item.kind is SignalKind.FAILURE_CLUSTER for item in restored.assess().signals)
+
+
+def test_sqlite_evolution_store_rejects_conflicting_immutable_records(tmp_path) -> None:
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        EvolutionStoreConflict,
+        SQLiteEvolutionStore,
+    )
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
+    system = SystemIdentity("observability", ("logging",))
+    first = _observation(
+        RegistryDrivenEvolutionController(registry),
+        system,
+        ObservationOutcome.SUCCESS,
+        0.1,
+        1,
+    )
+    store.append_observation(first)
+    conflicting = TopologyObservation(
+        observation_id=first.observation_id,
+        system=first.system,
+        topology_generation=first.topology_generation,
+        topology_digest=first.topology_digest,
+        operation_id="different-operation",
+        duration_seconds=first.duration_seconds,
+        outcome=first.outcome,
+    )
+
+    with pytest.raises(EvolutionStoreConflict):
+        store.append_observation(conflicting)
+
+
+def test_sqlite_evolution_store_fails_closed_on_corrupt_payload(tmp_path) -> None:
+    import sqlite3
+
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        EvolutionStoreIntegrityError,
+        SQLiteEvolutionStore,
+    )
+
+    path = tmp_path / "evolution.sqlite"
+    store = SQLiteEvolutionStore(path)
+    registry = build_default_system_registry()
+    observation = _observation(
+        RegistryDrivenEvolutionController(registry),
+        SystemIdentity("observability", ("logging",)),
+        ObservationOutcome.SUCCESS,
+        0.1,
+        1,
+    )
+    store.append_observation(observation)
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "UPDATE evolution_observations SET payload=? WHERE observation_id=?",
+            (b"corrupt", observation.observation_id),
+        )
+        connection.commit()
+
+    with pytest.raises(EvolutionStoreIntegrityError):
+        store.observations()
+
+
+def test_evolution_lifecycle_requires_evidence_and_supports_rollback() -> None:
+    registry = build_default_system_registry()
+    controller = RegistryDrivenEvolutionController(registry, minimum_samples=3)
+    system = SystemIdentity("observability", ("logging",))
+    for index in range(3):
+        controller.observe(
+            _observation(controller, system, ObservationOutcome.FAILURE, 0.2, index)
+        )
+    signal = next(
+        item for item in controller.assess().signals if item.kind is SignalKind.FAILURE_CLUSTER
+    )
+    proposal = controller.propose(
+        signal,
+        change_contract_id="lifecycle.v1",
+        implementation_digest=_digest("implementation"),
+        configuration_digest=_digest("configuration"),
+        validation_plan_digest=_digest("validation"),
+        rollback_anchor_digest=_digest("rollback"),
+    )
+
+    with pytest.raises(ValueError, match="illegal evolution transition"):
+        controller.advance(
+            proposal.proposal_id,
+            EvolutionStage.PROMOTED,
+            evidence_refs=("validation-evidence",),
+            reason_digest=_digest("reason"),
+            decision_contract_id="decision.v1",
+            decision_implementation_digest=_digest("decision-implementation"),
+            decision_configuration_digest=_digest("decision-configuration"),
+        )
+
+    validated = controller.advance(
+        proposal.proposal_id,
+        EvolutionStage.VALIDATED,
+        evidence_refs=("validation-evidence",),
+        reason_digest=_digest("validated"),
+        decision_contract_id="decision.v1",
+        decision_implementation_digest=_digest("decision-implementation"),
+        decision_configuration_digest=_digest("decision-configuration"),
+    )
+    promoted = controller.advance(
+        proposal.proposal_id,
+        EvolutionStage.PROMOTED,
+        evidence_refs=("canary-evidence",),
+        reason_digest=_digest("promoted"),
+        decision_contract_id="decision.v1",
+        decision_implementation_digest=_digest("decision-implementation"),
+        decision_configuration_digest=_digest("decision-configuration"),
+    )
+    rolled_back = controller.advance(
+        proposal.proposal_id,
+        EvolutionStage.ROLLED_BACK,
+        evidence_refs=("rollback-evidence",),
+        reason_digest=_digest("rollback"),
+        decision_contract_id="decision.v1",
+        decision_implementation_digest=_digest("decision-implementation"),
+        decision_configuration_digest=_digest("decision-configuration"),
+    )
+
+    assert validated.from_stage is EvolutionStage.PROPOSED
+    assert promoted.from_stage is EvolutionStage.VALIDATED
+    assert rolled_back.from_stage is EvolutionStage.PROMOTED
+    assert controller.current_stage(proposal.proposal_id) is EvolutionStage.ROLLED_BACK
+
+
+def test_persisted_evolution_transitions_rehydrate_contiguous_state(tmp_path) -> None:
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        SQLiteEvolutionStore,
+    )
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
+    controller = RegistryDrivenEvolutionController(registry, store=store, minimum_samples=1)
+    system = SystemIdentity("observability", ("logging",))
+    controller.observe(_observation(controller, system, ObservationOutcome.FAILURE, 0.2, 1))
+    signal = next(
+        item for item in controller.assess().signals if item.kind is SignalKind.FAILURE_CLUSTER
+    )
+    proposal = controller.propose(
+        signal,
+        change_contract_id="rehydration.v1",
+        implementation_digest=_digest("implementation"),
+        configuration_digest=_digest("configuration"),
+        validation_plan_digest=_digest("validation"),
+        rollback_anchor_digest=_digest("rollback"),
+    )
+    controller.advance(
+        proposal.proposal_id,
+        EvolutionStage.QUARANTINED,
+        evidence_refs=("quarantine-evidence",),
+        reason_digest=_digest("quarantine"),
+        decision_contract_id="decision.v1",
+        decision_implementation_digest=_digest("decision-implementation"),
+        decision_configuration_digest=_digest("decision-configuration"),
+    )
+
+    restored = RegistryDrivenEvolutionController(
+        registry,
+        store=SQLiteEvolutionStore(tmp_path / "evolution.sqlite"),
+        minimum_samples=1,
+    )
+
+    assert restored.current_stage(proposal.proposal_id) is EvolutionStage.QUARANTINED

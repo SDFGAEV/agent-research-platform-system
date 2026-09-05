@@ -10,6 +10,7 @@ from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegis
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
 from noetrium_platform.research.experimentation.catalog.runtime import InMemoryExperimentationCatalog
 from noetrium_platform.foundation.governance.evolution.api import SystemEvolutionPort
+from noetrium_platform.foundation.governance.evolution.providers import SQLiteEvolutionStore
 from noetrium_platform.foundation.governance.evolution.runtime import RegistryDrivenEvolutionController
 from noetrium_platform.foundation.governance.system_registry.api import SystemRegistryPort
 from noetrium_platform.foundation.governance.system_registry.runtime import build_default_system_registry
@@ -99,7 +100,8 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
     database = root / "platform-meta.sqlite"
     scopes = SQLiteScopeRegistry(database)
     systems = build_default_system_registry()
-    evolution = RegistryDrivenEvolutionController(systems)
+    evolution_store = SQLiteEvolutionStore(root / "platform-evolution.sqlite")
+    evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     resources = SQLiteResourceLeaseRegistry(database)
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(database),

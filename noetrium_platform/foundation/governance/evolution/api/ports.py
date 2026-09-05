@@ -7,6 +7,8 @@ from .contracts import (
     DiscoveryReport,
     EvolutionAssessment,
     EvolutionProposal,
+    EvolutionStage,
+    EvolutionTransition,
     ImprovementSignal,
     TopologyObservation,
 )
@@ -43,5 +45,44 @@ class SystemEvolutionPort(Protocol):
     ) -> EvolutionProposal:
         ...
 
+    def advance(
+        self,
+        proposal_id: str,
+        to_stage: EvolutionStage,
+        *,
+        evidence_refs: tuple[str, ...],
+        reason_digest: str,
+        decision_contract_id: str,
+        decision_implementation_digest: str,
+        decision_configuration_digest: str,
+    ) -> EvolutionTransition:
+        ...
 
-__all__ = ["SystemEvolutionPort"]
+
+@runtime_checkable
+class EvolutionStateStorePort(Protocol):
+    """Durable authority for evolution evidence and immutable proposals."""
+
+    def append_observation(self, observation: TopologyObservation) -> None:
+        ...
+
+    def append_discovery(self, report: DiscoveryReport) -> None:
+        ...
+
+    def put_proposal(self, proposal: EvolutionProposal) -> None:
+        ...
+
+    def append_transition(self, transition: EvolutionTransition) -> None:
+        ...
+
+    def observations(self) -> tuple[TopologyObservation, ...]:
+        ...
+
+    def proposals(self) -> tuple[EvolutionProposal, ...]:
+        ...
+
+    def transitions(self) -> tuple[EvolutionTransition, ...]:
+        ...
+
+
+__all__ = ["EvolutionStateStorePort", "SystemEvolutionPort"]

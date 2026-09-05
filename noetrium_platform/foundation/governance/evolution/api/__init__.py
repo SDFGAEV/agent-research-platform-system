@@ -4,13 +4,14 @@ from .contracts import (
     EvolutionAssessment,
     EvolutionProposal,
     EvolutionStage,
+    EvolutionTransition,
     ImprovementSignal,
     ObservationOutcome,
     SignalKind,
     TopologyDrift,
     TopologyObservation,
 )
-from .ports import SystemEvolutionPort
+from .ports import EvolutionStateStorePort, SystemEvolutionPort
 
 __all__ = [
     "DiscoveryReport",
@@ -18,6 +19,8 @@ __all__ = [
     "EvolutionAssessment",
     "EvolutionProposal",
     "EvolutionStage",
+    "EvolutionStateStorePort",
+    "EvolutionTransition",
     "ImprovementSignal",
     "ObservationOutcome",
     "SignalKind",

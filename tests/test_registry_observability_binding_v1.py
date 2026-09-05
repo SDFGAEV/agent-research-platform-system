@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.governance.system_registry.api import (
+    AuthorityDescriptor,
+    SystemDescriptor,
+    SystemIdentity,
+    SystemLayer,
+)
 from noetrium_platform.foundation.governance.system_registry.runtime import (
     SystemRegistryNotFound,
     build_default_system_registry,
@@ -107,3 +112,45 @@ def test_observation_factory_binds_the_complete_registered_topology() -> None:
         "observability",
         "observability/logging",
     )
+
+
+def test_observation_factory_rebinds_when_registry_grows() -> None:
+    from noetrium_platform.evidence.observability.logging.record.runtime import (
+        SystemObservationFactory,
+    )
+
+    systems = build_default_system_registry()
+    logging = _Logging()
+    factory = SystemObservationFactory(systems, logging, _Sink())
+    initial = factory.bind_all(trace_id="trace")
+
+    descriptor = SystemDescriptor(
+        identity=SystemIdentity("governance", ("dynamic-observability",)),
+        layer=SystemLayer.GOVERNANCE,
+        package_prefix="noetrium_platform.foundation.governance.dynamic_observability",
+        authorities=(AuthorityDescriptor("dynamic_observability_authority"),),
+        owns="dynamic observation test node",
+        must_not_own="business behavior",
+    )
+    systems.register(descriptor)
+
+    current = factory.bindings()
+    assert len(initial) == len(systems.list()) - 1
+    assert len(current) == len(systems.list())
+    dynamic = next(item for item in current if item.descriptor.identity == descriptor.identity)
+    assert dynamic.topology_generation == systems.generation
+    assert dynamic.topology_digest == systems.topology_digest
+
+    logging_count = len(logging.addresses)
+    factory.close()
+    systems.register(
+        SystemDescriptor(
+            identity=SystemIdentity("governance", ("after-close",)),
+            layer=SystemLayer.GOVERNANCE,
+            package_prefix="noetrium_platform.foundation.governance.after_close",
+            authorities=(AuthorityDescriptor("after_close_authority"),),
+            owns="closed factory test node",
+            must_not_own="business behavior",
+        )
+    )
+    assert len(logging.addresses) == logging_count

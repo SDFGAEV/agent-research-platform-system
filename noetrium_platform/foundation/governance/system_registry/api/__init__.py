@@ -1,5 +1,5 @@
 from .contracts import AuthorityDescriptor, SystemDescriptor, SystemIdentity, SystemLayer
-from .ports import SystemRegistryPort
+from .ports import SystemRegistryObserver, SystemRegistryPort
 from .topology import SYSTEM_CATALOG, system_catalog
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     "SystemDescriptor",
     "SystemIdentity",
     "SystemLayer",
+    "SystemRegistryObserver",
     "SystemRegistryPort",
     "system_catalog",
 ]

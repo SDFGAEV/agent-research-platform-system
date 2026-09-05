@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from threading import RLock
 
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
@@ -161,6 +162,31 @@ class SystemObservationFactory:
         self._systems = systems
         self._logging = logging
         self._metrics = metrics
+        self._lock = RLock()
+        self._bindings: dict[str, SystemObservationBinding] = {}
+        self._active = False
+        self._closed = False
+        self._scope = PLATFORM_SCOPE
+        self._trace_id: str | None = None
+        self._unsubscribe = self._systems.subscribe(self._on_topology_change)
+
+    def _on_topology_change(
+        self,
+        _descriptor: SystemDescriptor,
+        _generation: int,
+        _digest: str,
+    ) -> None:
+        if not self._active:
+            return
+        with self._lock:
+            self._bindings = {
+                descriptor.identity.key: self.bind(
+                    descriptor.identity,
+                    scope=self._scope,
+                    trace_id=self._trace_id,
+                )
+                for descriptor in self._systems.list()
+            }
 
     def _path(self, system: SystemIdentity) -> tuple[SystemIdentity, ...]:
         ancestors = tuple(
@@ -207,16 +233,38 @@ class SystemObservationFactory:
         scope: ScopeIdentity = PLATFORM_SCOPE,
         trace_id: str | None = None,
     ) -> tuple[SystemObservationBinding, ...]:
-        """Bind every registered node exactly once for automatic coverage."""
+        """Bind all nodes and keep the set synchronized with future registrations."""
 
-        return tuple(
-            self.bind(
-                descriptor.identity,
-                scope=scope,
-                trace_id=trace_id,
-            )
-            for descriptor in self._systems.list()
-        )
+        with self._lock:
+            if self._closed:
+                raise RuntimeError("system observation factory is closed")
+            self._scope = scope
+            self._trace_id = trace_id
+            self._active = True
+            self._bindings = {
+                descriptor.identity.key: self.bind(
+                    descriptor.identity,
+                    scope=scope,
+                    trace_id=trace_id,
+                )
+                for descriptor in self._systems.list()
+            }
+            return tuple(self._bindings.values())
+
+    def bindings(self) -> tuple[SystemObservationBinding, ...]:
+        """Return the current registry-synchronized binding snapshot."""
+
+        with self._lock:
+            return tuple(self._bindings.values())
+
+    def close(self) -> None:
+        """Stop automatic rebinding and release the registry subscription."""
+
+        with self._lock:
+            if not self._closed:
+                self._closed = True
+                self._active = False
+                self._unsubscribe()
 
 
 __all__ = [

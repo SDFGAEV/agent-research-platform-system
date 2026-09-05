@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Callable
 import hashlib
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor, SystemIdentity
+from noetrium_platform.foundation.governance.system_registry.api import (
+    SystemDescriptor,
+    SystemIdentity,
+    SystemRegistryObserver,
+)
 
 
 def _topology_digest(descriptors: tuple[SystemDescriptor, ...]) -> str:
@@ -27,6 +32,7 @@ class InMemorySystemRegistry:
     def __init__(self) -> None:
         self._items: dict[str, SystemDescriptor] = {}
         self._children: dict[str, set[str]] = {}
+        self._observers: list[SystemRegistryObserver] = []
         self._generation = 0
         self._topology_digest: str | None = _topology_digest(())
 
@@ -62,6 +68,30 @@ class InMemorySystemRegistry:
         self._children.setdefault(key, set())
         self._generation += 1
         self._topology_digest = None
+        digest = self.topology_digest
+        failures: list[BaseException] = []
+        for observer in tuple(self._observers):
+            try:
+                observer(descriptor, self._generation, digest)
+            except BaseException as exc:
+                failures.append(exc)
+        if failures:
+            raise BaseExceptionGroup(
+                "system registry observer notification failed",
+                tuple(failures),
+            )
+
+    def subscribe(self, observer: SystemRegistryObserver) -> Callable[[], None]:
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+        def unsubscribe() -> None:
+            try:
+                self._observers.remove(observer)
+            except ValueError:
+                pass
+
+        return unsubscribe
 
     def contains(self, key: str) -> bool:
         return key in self._items

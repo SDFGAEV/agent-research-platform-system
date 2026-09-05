@@ -114,8 +114,7 @@ def main(argv: list[str] | None = None) -> int:
     _readme_errors = validate_readme_i18n(root)
     if _readme_errors:
         print("RELEASE_EVIDENCE_FAIL: multilingual README gate failed")
-        for _error in _readme_errors:
-            print(f"README_I18N: {_error}")
+        print(f"README_I18N: {_readme_errors!r}")
         return 1
     print("README_I18N_RELEASE_GATE_PASS")
     try:

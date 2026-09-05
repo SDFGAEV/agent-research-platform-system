@@ -120,13 +120,12 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
             self._connection.execute("BEGIN IMMEDIATE")
             try:
                 self._connection.execute("DELETE FROM memory_items WHERE plane = ?", (plane,))
-                for item in items:
-                    self._connection.execute(
-                        "INSERT INTO memory_items "
-                        "(plane, namespace, memory_id, item_digest, content, tags_json, embedding_json, metadata_json) "
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                        (plane, *self._row(item)),
-                    )
+                self._connection.executemany(
+                    "INSERT INTO memory_items "
+                    "(plane, namespace, memory_id, item_digest, content, tags_json, embedding_json, metadata_json) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    tuple((plane, *self._row(item)) for item in items),
+                )
                 self._connection.execute("COMMIT")
             except BaseException:
                 self._connection.execute("ROLLBACK")

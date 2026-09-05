@@ -5,6 +5,8 @@ from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonScalar
 
+from .memory_checkpoint import AgentMemoryCheckpoint
+
 from .cognition import (
     AgentActionSequence,
     AgentActionStep,
@@ -70,6 +72,10 @@ class AgentActionExecutorPort(Protocol):
 
 
 class AgentMemoryPort(Protocol):
+    def checkpoint(self) -> AgentMemoryCheckpoint: ...
+
+    def restore(self, checkpoint: AgentMemoryCheckpoint) -> None: ...
+
     def recall(
         self,
         goal: AgentGoal,

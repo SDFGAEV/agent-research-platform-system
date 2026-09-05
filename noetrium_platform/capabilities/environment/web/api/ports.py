@@ -5,12 +5,13 @@ from typing import Protocol, runtime_checkable
 from noetrium_platform.capabilities.environment.api import (
     ActionRequest, ActionResult, Observation, ExecutionContext,
 )
+from .contracts import WebEnvironmentSpec
 
 
 @runtime_checkable
 class WebWorldPort(Protocol):
     @property
-    def spec(self): ...
+    def spec(self) -> WebEnvironmentSpec: ...
 
     def observe(self, context: ExecutionContext) -> Observation: ...
 

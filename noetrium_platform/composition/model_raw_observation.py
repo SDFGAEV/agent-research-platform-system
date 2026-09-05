@@ -10,7 +10,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRequest,
 )
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.foundation.kernel.kernel import canonical_bytes
+from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_bytes
 from noetrium_platform.evidence.observability.capture.api import RawObservationEnvelope
 from noetrium_platform.evidence.observability.capture.runtime import (
     RegistryBoundRawObservationGateway,
@@ -52,11 +52,11 @@ class RawLakeModelEndpointObserver(ModelEndpointObserverPort):
         event_id: str,
         attempt: int,
         raw_payload: bytes,
-        payload: Mapping[str, object],
+        payload: JsonObject,
         status: str,
         started_monotonic_ns: int,
         completed_monotonic_ns: int,
-        dimensions: Mapping[str, object] | None = None,
+        dimensions: JsonObject | None = None,
     ) -> None:
         context = request.request.context
         self._gateway.capture(

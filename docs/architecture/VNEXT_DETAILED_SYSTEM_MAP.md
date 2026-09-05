@@ -35,10 +35,14 @@ Data parent dependency contract: `data -> artifact, platform, scope`. Cross-quer
 ## Environment System
 
 - **binding** — `environment_binding` — owns: binding environment specs to scopes/runs/participants; must not own: artifact storage.
-- **embodied** — `embodied_environment` — owns: embodiment/episode/event contracts and provider-facing trajectory interaction; must not own: generic environment authority, experiment semantics, model serving, telemetry storage or vendor SDK internals.
 - **catalog** — `environment_catalog` — owns: environment catalog and versioned definitions; must not own: resource capacity.
+- **minecraft** — `minecraft_environment` — owns: persistent voxel open-world contracts, server-bridge actions/observations and branch-safe state; must not own: benchmark scoring or experiment semantics.
+- **embodied** — `embodied_environment` — owns: embodiment/episode/event contracts and provider-facing trajectory interaction; must not own: generic environment authority, experiment semantics, model serving, telemetry storage or vendor SDK internals.
+- **gui** — `gui_environment` — owns: desktop/mobile GUI environment contracts and provider adapters; must not own: benchmark cases, task scoring, tool capability policy or OS process supervision.
+- **web** — `web_environment` — owns: stateful browser/web-application contracts and provider adapters; must not own: benchmark scoring, browser automation policy or model serving.
+- **software** — `software_environment` — owns: repository/software-workspace contracts and provider adapters; must not own: benchmark scoring, repository policy, model serving or generic process supervision.
+- **text_world** — `text_world_environment` — owns: text-mediated stateful world contracts and provider adapters; must not own: dialogue method, benchmark scoring, agent memory or multi-agent topology.
 - **instance** — `environment_instance` — owns: environment instance identity, readiness and lifecycle; must not own: host supervision implementation.
-- **python** — `python_environment` — owns: Python runtime/interpreter environment contracts; must not own: generic process supervisor.
 - **resolution** — `environment_resolution` — owns: resolve logical environment requirements to concrete instance plan; must not own: process lifecycle.
 - **runtime** — `environment_runtime_contract` — owns: environment runtime adapter contracts; must not own: environment catalog authority.
 - **specification** — `environment_spec` — owns: environment definition and immutable spec identity; must not own: live host process state.
@@ -192,6 +196,7 @@ Runtime control/history, process identity/launch/lifecycle, session binding/iden
   - **identity** — `server_identity` — owns: stable server identity and deployment attachment; must not own: live health.
   - **lifecycle** — `server_lifecycle` — owns: server lifecycle state and transitions; must not own: process internals.
 - **toolchain** — `runtime_toolchain` — owns: verified host toolchain acquisition, materialization, identity and receipts; must not own: environment scenarios, experiment protocols, or project policy.
+- **python** — `python_environment` — owns: Python interpreter environments, package lifecycle and execution bindings; must not own: generic process supervision.
 
 ## Scientific semantics convergence
 

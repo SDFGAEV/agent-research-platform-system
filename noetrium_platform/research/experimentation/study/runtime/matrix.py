@@ -600,6 +600,95 @@ def _metric_aggregate(
     return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
 
 
+_MISSING_METRIC_VALUE = object()
+
+
+def _metric_record_matches(
+    record: UniversalRawRecord,
+    definition: UniversalMetricDefinition,
+) -> bool:
+    if definition.record_types and record.record_type not in definition.record_types:
+        return False
+    if definition.schema_ids and record.schema_id not in definition.schema_ids:
+        return False
+    return all(
+        _metric_record_path(record, predicate.path)[0]
+        and _metric_record_path(record, predicate.path)[1] == predicate.equals
+        for predicate in definition.predicates
+    )
+
+
+def _metric_group_values(
+    record: UniversalRawRecord,
+    definition: UniversalMetricDefinition,
+) -> tuple[object, ...] | None:
+    values: list[object] = []
+    for path in definition.group_by:
+        present, value = _metric_record_path(record, path)
+        if not present:
+            return None
+        values.append(value)
+    return tuple(values)
+
+
+def _metric_value(
+    record: UniversalRawRecord,
+    definition: UniversalMetricDefinition,
+) -> object:
+    if definition.aggregation is UniversalMetricAggregation.COUNT:
+        return 1
+    present, value = _metric_record_path(record, definition.value_path)
+    if present:
+        return value
+    if definition.missing is UniversalMetricMissingPolicy.FAIL:
+        raise ValueError(f"metric {definition.metric_id} has a missing value field")
+    if definition.missing is UniversalMetricMissingPolicy.ZERO:
+        return 0
+    return _MISSING_METRIC_VALUE
+
+
+def _metric_values_for_definition(
+    records: tuple[UniversalRawRecord, ...],
+    definition: UniversalMetricDefinition,
+) -> list[UniversalMetricValue]:
+    groups: dict[str, tuple[tuple[object, ...], list[object], list[UniversalRawRecord]]] = {}
+    for record in records:
+        if not _metric_record_matches(record, definition):
+            continue
+        key_values = _metric_group_values(record, definition)
+        if key_values is None:
+            if definition.missing is UniversalMetricMissingPolicy.FAIL:
+                raise ValueError(f"metric {definition.metric_id} has a missing group field")
+            continue
+        value = _metric_value(record, definition)
+        if value is _MISSING_METRIC_VALUE:
+            continue
+        group_key = canonical_digest(key_values)
+        row = groups.setdefault(group_key, (key_values, [], []))
+        row[1].append(value)
+        row[2].append(record)
+    if not groups:
+        empty_value = (
+            0
+            if definition.aggregation
+            in (UniversalMetricAggregation.COUNT, UniversalMetricAggregation.DISTINCT_COUNT)
+            else _metric_aggregate(definition.aggregation, [], definition.metric_id)
+        )
+        return [UniversalMetricValue(definition.metric_id, (), empty_value, 0, ())]
+    values: list[UniversalMetricValue] = []
+    for key_values, group_values, group_records in groups.values():
+        values.append(
+            UniversalMetricValue(
+                definition.metric_id,
+                key_values,
+                _metric_aggregate(definition.aggregation, group_values, definition.metric_id),
+                len(group_values),
+                tuple(sorted(record.record_digest for record in group_records)),
+            )
+        )
+    return values
+
+
 class MetricEngine:
     """Compile no code; evaluate typed metric declarations over an immutable cut."""
 
@@ -620,64 +709,7 @@ class MetricEngine:
             raise ValueError("metric engine raw cut contains duplicate records")
         values: list[UniversalMetricValue] = []
         for definition in definitions:
-            groups: dict[str, tuple[tuple[object, ...], list[object], list[UniversalRawRecord]]] = {}
-            for record in records:
-                if definition.record_types and record.record_type not in definition.record_types:
-                    continue
-                if definition.schema_ids and record.schema_id not in definition.schema_ids:
-                    continue
-                if any(
-                    not _metric_record_path(record, predicate.path)[0]
-                    or _metric_record_path(record, predicate.path)[1] != predicate.equals
-                    for predicate in definition.predicates
-                ):
-                    continue
-                group_key_values: list[object] = []
-                group_missing = False
-                for path in definition.group_by:
-                    present, group_value = _metric_record_path(record, path)
-                    if not present:
-                        group_missing = True
-                        break
-                    group_key_values.append(group_value)
-                if group_missing:
-                    if definition.missing is UniversalMetricMissingPolicy.FAIL:
-                        raise ValueError(f"metric {definition.metric_id} has a missing group field")
-                    continue
-                if definition.aggregation is UniversalMetricAggregation.COUNT:
-                    present, value = True, 1
-                else:
-                    present, value = _metric_record_path(record, definition.value_path)
-                    if not present:
-                        if definition.missing is UniversalMetricMissingPolicy.FAIL:
-                            raise ValueError(f"metric {definition.metric_id} has a missing value field")
-                        if definition.missing is UniversalMetricMissingPolicy.ZERO:
-                            value = 0
-                            present = True
-                if not present:
-                    continue
-                group_key = canonical_digest(tuple(group_key_values))
-                row = groups.setdefault(group_key, (tuple(group_key_values), [], []))
-                row[1].append(value)
-                row[2].append(record)
-            if not groups:
-                empty_value = 0 if definition.aggregation in (
-                    UniversalMetricAggregation.COUNT,
-                    UniversalMetricAggregation.DISTINCT_COUNT,
-                ) else _metric_aggregate(definition.aggregation, [], definition.metric_id)
-                values.append(UniversalMetricValue(
-                    definition.metric_id, (), empty_value, 0, (),
-                ))
-                continue
-            for group_key, (key_values, group_values, group_records) in groups.items():
-                del group_key
-                values.append(UniversalMetricValue(
-                    definition.metric_id,
-                    tuple(key_values),
-                    _metric_aggregate(definition.aggregation, group_values, definition.metric_id),
-                    len(group_values),
-                    tuple(sorted(record.record_digest for record in group_records)),
-                ))
+            values.extend(_metric_values_for_definition(records, definition))
         values.sort(key=lambda item: (item.metric_id, canonical_digest(item.group_key)))
         return UniversalMetricReport(
             canonical_digest(record_ids),

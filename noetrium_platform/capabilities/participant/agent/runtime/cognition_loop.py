@@ -68,6 +68,7 @@ class AgentCognitionLoop:
     ) -> None:
         self.completion = completion
         self.diagnostics = diagnostics
+        self._memory = memory
         self.clock = clock
         self._diagnostic_failures: list[dict[str, object]] = []
         self._observation_phase = CognitionObservationPhase(
@@ -104,6 +105,7 @@ class AgentCognitionLoop:
         )
         self._checkpoint_phase = CognitionCheckpointPhase(
             progress=progress,
+            memory=memory,
             failure=self._failure,
         )
 
@@ -177,6 +179,14 @@ class AgentCognitionLoop:
             raise ValueError("agent cognition checkpoint belongs to another goal")
         if checkpoint is not None and checkpoint.session_id != run_session_id:
             raise ValueError("agent cognition checkpoint belongs to another session")
+        if checkpoint is not None and checkpoint.memory_checkpoint is not None:
+            try:
+                self._memory.restore(checkpoint.memory_checkpoint)
+            except BaseException as exc:
+                self._failure("AGENT_MEMORY_RESTORE_FAILED", str(exc), phase="restore")
+                raise AgentCognitionError(
+                    "restore", "AGENT_MEMORY_RESTORE_FAILED", str(exc), cause=exc
+                ) from exc
         counters = CognitionCounters.from_checkpoint(checkpoint)
         summaries = list(checkpoint.action_summaries if checkpoint is not None else ())
         receipts: list[AgentStepReceipt] = []

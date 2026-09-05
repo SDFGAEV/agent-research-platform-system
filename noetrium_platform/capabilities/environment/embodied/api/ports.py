@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.capabilities.environment.api.interaction import EnvironmentCapabilityDescriptor
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput
 
 from .contracts import (
     EmbodiedActionCommand,
@@ -48,14 +49,14 @@ class EmbodiedQueryPort(Protocol):
     def query(
         self,
         query_type: str,
-        payload: object,
+        payload: JsonInput,
         context: ExecutionContext,
     ) -> tuple[EmbodiedEvent, ...]: ...
 
 
 @runtime_checkable
 class EmbodiedCapabilityPort(Protocol):
-    def capability_descriptors(self) -> tuple[object, ...]: ...
+    def capability_descriptors(self) -> tuple[EnvironmentCapabilityDescriptor, ...]: ...
 
 
 __all__ = [

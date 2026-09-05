@@ -1,6 +1,6 @@
 # Current Development Baseline
 
-**Baseline date:** 2026-09-02
+**Baseline date:** 2026-09-05
 **Platform version:** 0.44.0
 **Repository role:** reusable upstream platform
 
@@ -20,7 +20,7 @@ Concrete downstream behavior binds through public contracts and may add scientif
 
 ## Current source validation
 
-The current component-boundary validation on 2026-09-02 completed with **18 passed, 0 failed, and 0 errors** across public-import, agent-component, capability-bridge, graph-recovery, and multi-agent-journal tests. Public contract audit reported **0 legacy paths, 0 initializer violations, and 0 weak contracts**; architecture import audit reported **4889 edges, 0 violations, and 0 cycles**. The larger source-validation figures below are retained as historical evidence for the pre-component-expansion tree.
+The current validation on 2026-09-05 completed with **28 passed, 0 failed, and 0 errors** across the catalog and cognition recovery suites; the focused environment and cognition contract suite completed with **25 passed**. Public contract audit reports **0 legacy paths, 0 initializer violations, and 0 weak contracts**; the current architecture report contains **5027 import edges, 0 violations, and 0 package cycles**. The complete release regression inventory contains **2752 tests: 2742 passed and 10 skipped across 44 shards**. Static release evidence remains intentionally blocked until the updated algorithm and performance source baselines receive the required external ROLE00 approvals.
 
 The three source inventories explicitly exclude `.server-state`, so local controller state, audit clones, transfer staging, and forensic scratch files cannot contaminate platform governance evidence.
 

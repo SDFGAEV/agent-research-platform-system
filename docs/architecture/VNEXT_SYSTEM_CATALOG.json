@@ -411,45 +411,45 @@
   },
   "environment/gui": {
     "authority": "gui_environment",
-    "must_not_own": "generic environment catalog, model serving, tool definitions or benchmark scoring",
-    "owns": "GUI/computer-use environment contracts, state observation and action execution boundaries",
+    "must_not_own": "benchmark cases, task scoring, tool capability policy or OS process supervision",
+    "owns": "desktop and mobile GUI environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.gui",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "reliability", "resource"],
+    "requires": ["environment", "runtime"],
     "provides": ["environment.gui.contract"],
     "components": []
   },
   "environment/web": {
     "authority": "web_environment",
-    "must_not_own": "web tool catalog, benchmark scoring or project semantics",
-    "owns": "web/browser environment contracts, navigation state and browser action boundaries",
+    "must_not_own": "benchmark cases, task scoring, browser automation policy or model serving",
+    "owns": "stateful web and browser environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.web",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "reliability", "resource"],
+    "requires": ["environment", "runtime"],
     "provides": ["environment.web.contract"],
     "components": []
   },
   "environment/software": {
     "authority": "software_environment",
-    "must_not_own": "software engineering method semantics, model serving or benchmark scoring",
-    "owns": "repository/terminal software environment contracts, workspace state and mutation boundaries",
+    "must_not_own": "benchmark scoring, repository policy, model serving or generic process supervision",
+    "owns": "repository and software-workspace environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.software",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "reliability", "resource"],
+    "requires": ["environment", "runtime", "resource"],
     "provides": ["environment.software.contract"],
     "components": []
   },
   "environment/text_world": {
     "authority": "text_world_environment",
-    "must_not_own": "benchmark scoring, replay storage or language-model policy",
-    "owns": "text-world state, command/action interaction and observation boundaries",
+    "must_not_own": "dialogue method, benchmark scoring, agent memory or multi-agent topology",
+    "owns": "text-mediated stateful world contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.text_world",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "reliability"],
+    "requires": ["environment"],
     "provides": ["environment.text_world.contract"],
     "components": []
   },
@@ -1931,7 +1931,9 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "runtime"
+    ],
     "provides": [],
     "components": []
   },
@@ -2698,11 +2700,19 @@
   "runtime/python": {
     "authority": "python_environment",
     "must_not_own": "generic process supervisor",
-    "owns": "Python runtime/interpreter environment contracts",
+    "owns": "Python interpreter environments, package lifecycle and execution bindings",
     "package_prefix": "noetrium_platform.infrastructure.lifecycle.python",
     "parent": "runtime",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": [],
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "runtime",
+      "resource"
+    ],
     "provides": [
       "python-environment.registry",
       "python-environment.lifecycle",

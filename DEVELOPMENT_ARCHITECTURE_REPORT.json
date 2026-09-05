@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 166,
     "contract_declarations": 174,
-    "import_edges": 5020,
+    "import_edges": 5027,
     "subsystems": 148,
     "top_level_systems": 18
   },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5020,
+  "import_edges": 5027,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "d578d08c27f84ce181e33ebc7cf235b392fbf611293c144f7b58c9f2b082930b",
+  "report_sha256": "00894d81852cd00ee7719111e4d81fe38582811e50afdf7122bbba0c77c5f200",
   "source_authority_violations": [],
-  "source_digest": "f377073f42bd319ced6fd9d77617e307544b05c94faf45f1be94aa3c582a77df",
+  "source_digest": "4b7c52cd2d7e10ff24788e695e14ec5f2907d255a9ba357d70f7649b6ed4d14d",
   "source_invariant_violations": [],
   "source_root": "E:\\Agent-Research-Workspace\\projects\\active\\agent-research-platform-system",
   "subsystem_graph": [

@@ -5,6 +5,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentActionStep,
     AgentGoal,
+    AgentMemoryCheckpoint,
     AgentMemoryContext,
     AgentObservation,
     AgentSafetyDecision,
@@ -59,6 +60,12 @@ class Executor:
 
 
 class Memory:
+    def checkpoint(self):
+        return AgentMemoryCheckpoint(0, ())
+
+    def restore(self, checkpoint):
+        assert isinstance(checkpoint, AgentMemoryCheckpoint)
+
     def recall(self, goal, observation, context):
         del goal, context
         return AgentMemoryContext("", observation.generation)

@@ -8,6 +8,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentLoopTerminationReason,
     AgentObservation,
 )
+from noetrium_platform.capabilities.participant.agent.runtime import InMemoryAgentMemory
 from noetrium_platform.capabilities.participant.agent.runtime.cognition_checkpoint import (
     CognitionCheckpointPhase,
     build_cognition_result,
@@ -54,8 +55,10 @@ def test_cognition_counters_track_no_progress_and_new_action_run() -> None:
 def test_checkpoint_phase_persists_exact_runtime_state() -> None:
     progress = _Progress()
     failures = []
+    memory = InMemoryAgentMemory()
     phase = CognitionCheckpointPhase(
         progress=progress,
+        memory=memory,
         failure=lambda code, message, **kwargs: failures.append((code, message, kwargs)),
     )
     goal = AgentGoal("goal:state", "persist state")
@@ -74,6 +77,8 @@ def test_checkpoint_phase_persists_exact_runtime_state() -> None:
     assert checkpoint.step == 2
     assert checkpoint.plan_calls == 4
     assert checkpoint.last_observation_digest == observation.state_digest
+    assert checkpoint.memory_checkpoint is not None
+    assert checkpoint.memory_checkpoint == memory.checkpoint()
     assert failures == []
 
 
@@ -81,6 +86,7 @@ def test_checkpoint_phase_wraps_persistence_failure() -> None:
     failures = []
     phase = CognitionCheckpointPhase(
         progress=_Progress(RuntimeError("disk unavailable")),
+        memory=InMemoryAgentMemory(),
         failure=lambda code, message, **kwargs: failures.append((code, message, kwargs)),
     )
     with pytest.raises(AgentCognitionError) as error:
@@ -100,7 +106,7 @@ def test_checkpoint_phase_wraps_persistence_failure() -> None:
 
 def test_result_builder_binds_checkpoint_and_observation_diagnostics() -> None:
     progress = _Progress()
-    phase = CognitionCheckpointPhase(progress=progress, failure=lambda *args, **kwargs: None)
+    phase = CognitionCheckpointPhase(progress=progress, memory=InMemoryAgentMemory(), failure=lambda *args, **kwargs: None)
     observation = AgentObservation("obs:result", "world-v1", {"done": True})
     counters = CognitionCounters(step=1, plan_calls=2)
     checkpoint = phase.persist(

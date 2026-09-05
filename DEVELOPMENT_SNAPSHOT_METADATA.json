@@ -1,9 +1,9 @@
 {
-  "architecture_import_edges": 5020,
-  "architecture_report_sha256": "d578d08c27f84ce181e33ebc7cf235b392fbf611293c144f7b58c9f2b082930b",
+  "architecture_import_edges": 5027,
+  "architecture_report_sha256": "00894d81852cd00ee7719111e4d81fe38582811e50afdf7122bbba0c77c5f200",
   "architecture_summary_document": "docs/architecture/CURRENT_ARCHITECTURE_EVOLUTION_20260820.md",
   "capability_graph_edges": 6,
-  "created_at_utc": "2026-09-05T20:31:26.529024+00:00",
+  "created_at_utc": "2026-09-05T22:07:29.350194+00:00",
   "docs_file_count": 186,
   "event_graph_edges": 13,
   "file_count": 3179,

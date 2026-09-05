@@ -15,7 +15,7 @@ from ..api.cognition import (
     AgentReceiptCheckpoint,
     AgentStepReceipt,
 )
-from ..api.cognition_ports import AgentProgressPort
+from ..api.cognition_ports import AgentMemoryPort, AgentProgressPort
 from .cognition_state import CognitionCounters
 
 
@@ -25,8 +25,9 @@ FailureSink = Callable[..., None]
 class CognitionCheckpointPhase:
     """Own durable cognition checkpoint construction and publication."""
 
-    def __init__(self, *, progress: AgentProgressPort, failure: FailureSink) -> None:
+    def __init__(self, *, progress: AgentProgressPort, memory: AgentMemoryPort, failure: FailureSink) -> None:
         self._progress = progress
+        self._memory = memory
         self._failure = failure
 
     def persist(
@@ -40,6 +41,13 @@ class CognitionCheckpointPhase:
         last_receipt: AgentStepReceipt | None,
         context: ExecutionContext,
     ) -> AgentLoopCheckpoint:
+        try:
+            memory_checkpoint = self._memory.checkpoint()
+        except BaseException as exc:
+            self._failure("AGENT_CHECKPOINT_FAILED", str(exc), phase="checkpoint")
+            raise AgentCognitionError(
+                "checkpoint", "AGENT_CHECKPOINT_FAILED", str(exc), cause=exc
+            ) from exc
         checkpoint = AgentLoopCheckpoint(
             schema_version="agent-cognition-checkpoint.v2",
             session_id=session_id,
@@ -54,6 +62,7 @@ class CognitionCheckpointPhase:
                 None if last_receipt is None
                 else AgentReceiptCheckpoint.from_receipt(last_receipt)
             ),
+            memory_checkpoint=memory_checkpoint,
         )
         try:
             self._progress.persist(checkpoint, context)

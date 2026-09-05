@@ -7,6 +7,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionStep,
     AgentCognitionError,
     AgentGoal,
+    AgentMemoryCheckpoint,
     AgentMemoryContext,
     AgentObservation,
     AgentSafetyDecision,
@@ -36,6 +37,12 @@ class _Memory:
     def recall(self, goal, observation, context):
         del goal, context
         return AgentMemoryContext("", observation.generation)
+    def checkpoint(self):
+        return AgentMemoryCheckpoint(0, ())
+
+    def restore(self, checkpoint):
+        assert isinstance(checkpoint, AgentMemoryCheckpoint)
+
     def record(self, receipt, context):
         del context
         self.receipts.append(receipt)

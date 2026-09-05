@@ -7,6 +7,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSummary,
     AgentGoal,
     AgentLoopCheckpoint,
+    AgentMemoryCheckpoint,
     AgentMemoryContext,
     AgentObservation,
     AgentPlanningRequest,
@@ -27,6 +28,15 @@ class _Observation:
 
 
 class _Memory:
+    def __init__(self):
+        self.restored = None
+
+    def checkpoint(self):
+        return AgentMemoryCheckpoint(0, ())
+
+    def restore(self, checkpoint):
+        self.restored = checkpoint
+
     def recall(self, goal, observation, context):
         del goal, context
         return AgentMemoryContext("", observation.generation)
@@ -99,26 +109,30 @@ def _checkpoint(goal: AgentGoal) -> AgentLoopCheckpoint:
     return AgentLoopCheckpoint(
         "agent-cognition-checkpoint.v2", "session:1", goal.digest,
         1, 1, 0, 1, "state:prior", (summary,), receipt,
+        AgentMemoryCheckpoint(4, ()),
     )
 
 
 def test_resume_reconstructs_last_receipt_for_completion_semantics() -> None:
     goal = AgentGoal("goal:1", "finish safely", max_steps=3)
     progress = _Progress()
+    memory = _Memory()
+    checkpoint = _checkpoint(goal)
     loop = AgentCognitionLoop(
         observation=_Observation(), planner=_Planner(), skills=_Skills(), executor=_Executor(),
-        memory=_Memory(), safety=_Safety(), completion=_Completion(), evidence=_Evidence(),
+        memory=memory, safety=_Safety(), completion=_Completion(), evidence=_Evidence(),
         progress=progress, clock=lambda: 1.0,
     )
     result = loop.run(
         goal,
         ExecutionContext("run:1", "trace:1", "span:1"),
         session_id="session:1",
-        checkpoint=_checkpoint(goal),
+        checkpoint=checkpoint,
     )
 
     assert result.success is True
     assert result.steps == 1
+    assert memory.restored == checkpoint.memory_checkpoint
     assert result.action_receipts == ()
     assert result.checkpoint.last_receipt is not None
     assert result.checkpoint.last_receipt.effect_id == "effect:1"

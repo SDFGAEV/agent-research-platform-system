@@ -93,29 +93,39 @@ class StudyMatrixExecutor:
             )
 
         invocation_id = uuid4().hex
-        handles = []
-        for index, item in enumerate(items):
-            def run(_context, owned_item=item):
-                return execute_one(owned_item)
-
-            handle = self._task_group.submit(
-                ExecutionSpec(
-                    task_id=f"{task_id_prefix}:{invocation_id}:{index}",
-                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                    failure_scope=TaskFailureScope.CALLER,
-                ),
-                run,
-                deadline=Deadline.after(timeout_seconds),
-            )
-            handles.append(handle)
-
+        iterator = iter(items)
         results: list[_R] = []
         errors: list[BaseException] = []
-        for handle in handles:
-            try:
-                results.append(handle.result(timeout=timeout_seconds))
-            except BaseException as exc:
-                errors.append(exc)
+        index = 0
+        while True:
+            handles = []
+            while len(handles) < effective_parallelism:
+                try:
+                    item = next(iterator)
+                except StopIteration:
+                    break
+
+                def run(_context, owned_item=item):
+                    return execute_one(owned_item)
+
+                handle = self._task_group.submit(
+                    ExecutionSpec(
+                        task_id=f"{task_id_prefix}:{invocation_id}:{index}",
+                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                        failure_scope=TaskFailureScope.CALLER,
+                    ),
+                    run,
+                    deadline=Deadline.after(timeout_seconds),
+                )
+                handles.append(handle)
+                index += 1
+            if not handles:
+                break
+            for handle in handles:
+                try:
+                    results.append(handle.result(timeout=timeout_seconds))
+                except BaseException as exc:
+                    errors.append(exc)
         if errors:
             raise ExceptionGroup(failure_message, errors)
         return tuple(results)

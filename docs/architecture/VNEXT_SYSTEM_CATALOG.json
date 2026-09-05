@@ -409,58 +409,48 @@
     ],
     "components": []
   },
-  "environment/benchmark": {
-    "authority": "benchmark_environment",
-    "must_not_own": "benchmark scoring authority, provider SDK internals or project semantics",
-    "owns": "provider-neutral external benchmark case identity and environment adaptation",
-    "package_prefix": "noetrium_platform.capabilities.environment.benchmark",
+  "environment/gui": {
+    "authority": "gui_environment",
+    "must_not_own": "generic environment catalog, model serving, tool definitions or benchmark scoring",
+    "owns": "GUI/computer-use environment contracts, state observation and action execution boundaries",
+    "package_prefix": "noetrium_platform.capabilities.environment.gui",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "artifact", "reliability"],
-    "provides": ["environment.benchmark.contract"],
+    "requires": ["environment", "reliability", "resource"],
+    "provides": ["environment.gui.contract"],
     "components": []
   },
-  "environment/synthetic": {
-    "authority": "synthetic_environment",
-    "must_not_own": "project semantics, benchmark truth or external provider lifecycle",
-    "owns": "deterministic synthetic environment composition for tests and fast experiments",
-    "package_prefix": "noetrium_platform.capabilities.environment.synthetic",
+  "environment/web": {
+    "authority": "web_environment",
+    "must_not_own": "web tool catalog, benchmark scoring or project semantics",
+    "owns": "web/browser environment contracts, navigation state and browser action boundaries",
+    "package_prefix": "noetrium_platform.capabilities.environment.web",
+    "parent": "environment",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": ["environment", "reliability", "resource"],
+    "provides": ["environment.web.contract"],
+    "components": []
+  },
+  "environment/software": {
+    "authority": "software_environment",
+    "must_not_own": "software engineering method semantics, model serving or benchmark scoring",
+    "owns": "repository/terminal software environment contracts, workspace state and mutation boundaries",
+    "package_prefix": "noetrium_platform.capabilities.environment.software",
+    "parent": "environment",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": ["environment", "reliability", "resource"],
+    "provides": ["environment.software.contract"],
+    "components": []
+  },
+  "environment/text_world": {
+    "authority": "text_world_environment",
+    "must_not_own": "benchmark scoring, replay storage or language-model policy",
+    "owns": "text-world state, command/action interaction and observation boundaries",
+    "package_prefix": "noetrium_platform.capabilities.environment.text_world",
     "parent": "environment",
     "shape": ["api", "runtime", "providers", "composition"],
     "requires": ["environment", "reliability"],
-    "provides": ["environment.synthetic.contract"],
-    "components": []
-  },
-  "environment/replay": {
-    "authority": "replay_environment",
-    "must_not_own": "live environment mutation or derived metric authority",
-    "owns": "immutable trajectory replay and regression environment semantics",
-    "package_prefix": "noetrium_platform.capabilities.environment.replay",
-    "parent": "environment",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "artifact"],
-    "provides": ["environment.replay.contract"],
-    "components": []
-  },
-  "environment/python": {
-    "authority": "python_environment",
-    "must_not_own": "generic process supervisor",
-    "owns": "Python runtime/interpreter environment contracts",
-    "package_prefix": "noetrium_platform.capabilities.environment.python",
-    "parent": "environment",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "requires": [],
-    "provides": [
-      "python-environment.registry",
-      "python-environment.lifecycle",
-      "python-environment.execution",
-      "python-environment.packages"
-    ],
+    "provides": ["environment.text_world.contract"],
     "components": []
   },
   "environment/resolution": {
@@ -2702,6 +2692,22 @@
     ],
     "provides": [
       "runtime.toolchain"
+    ],
+    "components": []
+  },
+  "runtime/python": {
+    "authority": "python_environment",
+    "must_not_own": "generic process supervisor",
+    "owns": "Python runtime/interpreter environment contracts",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.python",
+    "parent": "runtime",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": [],
+    "provides": [
+      "python-environment.registry",
+      "python-environment.lifecycle",
+      "python-environment.execution",
+      "python-environment.packages"
     ],
     "components": []
   },

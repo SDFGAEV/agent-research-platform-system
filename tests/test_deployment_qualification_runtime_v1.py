@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from noetrium_platform.capabilities.environment.python.api import EnvironmentCommandResult
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
 from noetrium_platform.capabilities.model.qualification.api import (
     CudaFacts,
     DeploymentCapabilityFacts,

@@ -7,16 +7,16 @@ from unittest.mock import patch
 
 import pytest
 
-from noetrium_platform.capabilities.environment.python.api import (
+from noetrium_platform.infrastructure.lifecycle.python.api import (
     EnvironmentCommandResult,
     PythonEnvironmentSpec,
 )
-from noetrium_platform.capabilities.environment.python.runtime import (
+from noetrium_platform.infrastructure.lifecycle.python.runtime import (
     CondaEnvironmentBackend,
     VenvEnvironmentBackend,
     build_python_environment_authorities,
 )
-from noetrium_platform.capabilities.environment.python.runtime.registry import PythonEnvironmentRegistry
+from noetrium_platform.infrastructure.lifecycle.python.runtime.registry import PythonEnvironmentRegistry
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, ManagedDirectoryKind
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
@@ -166,7 +166,7 @@ def test_python_backends_route_interpreters_by_controller_os() -> None:
     conda_root = Path("C:/env")
     venv_expected = venv_root / "Scripts/python.exe"
     conda_expected = conda_root / "python.exe"
-    with patch("noetrium_platform.capabilities.environment.python.runtime.venv_backend.os.name", "nt"):
+    with patch("noetrium_platform.infrastructure.lifecycle.python.runtime.venv_backend.os.name", "nt"):
         assert VenvEnvironmentBackend(runner).python_path(venv_root) == venv_expected
-    with patch("noetrium_platform.capabilities.environment.python.runtime.conda_backend.os.name", "nt"):
+    with patch("noetrium_platform.infrastructure.lifecycle.python.runtime.conda_backend.os.name", "nt"):
         assert CondaEnvironmentBackend(runner).python_path(conda_root) == conda_expected

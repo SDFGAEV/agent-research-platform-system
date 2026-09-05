@@ -7,7 +7,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentSpec,
     ModelDesiredState,
 )
-from noetrium_platform.capabilities.environment.python.api import PythonEnvironmentLookupPort
+from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentLookupPort
 
 from noetrium_platform.capabilities.model.asset.api import ModelAssetLookupPort
 from .deployment_registry import ModelDeploymentRegistry

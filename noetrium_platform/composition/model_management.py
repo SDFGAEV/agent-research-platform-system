@@ -32,12 +32,12 @@ from noetrium_platform.capabilities.model.qualification.composition import (
     build_local_deployment_qualification,
 )
 from noetrium_platform.infrastructure.resources.compute.providers import NvidiaSmiGpuRuntimeObserver
-from noetrium_platform.capabilities.environment.python.api import PythonEnvironmentAuthorities
+from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import ExecutionEnvironmentCatalog
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.capabilities.environment.python.runtime import (
+from noetrium_platform.infrastructure.lifecycle.python.runtime import (
     CondaEnvironmentBackend,
     build_python_environment_authorities,
     SubprocessEnvironmentCommandRunner,

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from noetrium_platform.capabilities.environment.python.api import EnvironmentCommandResult
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
 from noetrium_platform.composition.model_management import build_local_management_plane
 from noetrium_platform.foundation.kernel.concurrency.api import TaskFailurePolicy, TaskGroupPort
 from noetrium_platform.composition.concurrency import build_execution_concurrency_runtime

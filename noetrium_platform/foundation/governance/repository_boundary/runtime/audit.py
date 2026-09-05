@@ -20,13 +20,13 @@ _FORBIDDEN_ROOTS = (
     "docs/research",
 )
 
-_FRAMEWORK_ENVIRONMENT_DIRS = frozenset({"api", "binding", "catalog", "composition", "instance", "providers", "python", "resolution", "runtime", "specification"})
-_BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft", "embodied", "benchmark", "synthetic", "replay"})
+_FRAMEWORK_ENVIRONMENT_DIRS = frozenset({"api", "binding", "catalog", "category", "composition", "instance", "providers", "resolution", "runtime", "specification"})
+_BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft", "embodied", "gui", "web", "software", "text_world"})
 _ALLOWED_ENVIRONMENT_SYSTEMS = frozenset({
-    "environment", "environment/binding", "environment/catalog", "environment/instance",
+    "environment", "environment/binding", "environment/catalog", "environment/category", "environment/instance",
     "environment/instance/identity", "environment/instance/readiness", "environment/minecraft", "environment/embodied",
-    "environment/benchmark", "environment/synthetic", "environment/replay",
-    "environment/python", "environment/resolution", "environment/runtime", "environment/specification",
+    "environment/gui", "environment/web", "environment/software", "environment/text_world",
+    "environment/resolution", "environment/runtime", "environment/specification",
     "environment/specification/digest", "environment/specification/schema",
 })
 

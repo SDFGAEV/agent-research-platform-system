@@ -5,17 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from noetrium_platform.capabilities.environment.python.api import (
+from noetrium_platform.infrastructure.lifecycle.python.api import (
     EnvironmentCommandResult,
     PythonEnvironmentOwnership,
     PythonEnvironmentSpec,
 )
-from noetrium_platform.capabilities.environment.python.runtime import build_python_environment_authorities
-from noetrium_platform.capabilities.environment.python.runtime.lifecycle_transaction import (
+from noetrium_platform.infrastructure.lifecycle.python.runtime import build_python_environment_authorities
+from noetrium_platform.infrastructure.lifecycle.python.runtime.lifecycle_transaction import (
     PythonEnvironmentLifecycleTransaction,
     PythonEnvironmentLifecycleTransactionStore,
 )
-from noetrium_platform.capabilities.environment.python.runtime.registry import PythonEnvironmentRegistry
+from noetrium_platform.infrastructure.lifecycle.python.runtime.registry import PythonEnvironmentRegistry
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, ManagedDirectoryKind
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE

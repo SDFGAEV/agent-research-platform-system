@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from noetrium_platform.capabilities.environment.python.api import PythonEnvironmentSpec
+from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentSpec
 
 from .context import ManagementCommandContext
 from .scope_args import add_scope_arguments, scope_from_args

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from noetrium_platform.capabilities.environment.python.api import EnvironmentCommandResult, PythonPackageManagementPort
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult, PythonPackageManagementPort
 from noetrium_platform.capabilities.model.qualification.api import (
     InstallPackage,
     QualificationCommandReceipt,

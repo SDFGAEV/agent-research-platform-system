@@ -6,16 +6,16 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentQuery,
     ExecutionContext,
 )
-from noetrium_platform.capabilities.environment.benchmark.api import (
+from noetrium_platform.research.experimentation.benchmark.api import (
     BenchmarkCase,
 )
-from noetrium_platform.capabilities.environment.benchmark.composition import (
+from noetrium_platform.research.experimentation.benchmark.composition import (
     BenchmarkEnvironmentProviderAdapter,
 )
-from noetrium_platform.capabilities.environment.replay.api import ReplayEvent, ReplayTrace
-from noetrium_platform.capabilities.environment.replay.composition import ReplayEnvironmentProvider
-from noetrium_platform.capabilities.environment.synthetic.api import SyntheticEnvironmentSpec
-from noetrium_platform.capabilities.environment.synthetic.composition import compose_synthetic_environment
+from noetrium_platform.capabilities.environment.runtime.modes.replay.api import ReplayEvent, ReplayTrace
+from noetrium_platform.capabilities.environment.runtime.modes.replay.composition import ReplayEnvironmentProvider
+from noetrium_platform.capabilities.environment.runtime.modes.synthetic.api import SyntheticEnvironmentSpec
+from noetrium_platform.capabilities.environment.runtime.modes.synthetic.composition import compose_synthetic_environment
 from noetrium_platform.capabilities.environment.runtime.api import (
     StateMachineDynamicsIdentity,
     StateTransition,

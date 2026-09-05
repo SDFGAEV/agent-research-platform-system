@@ -107,3 +107,10 @@ Before handing a new adapter to project composition:
 - expose typed diagnostics only as a read-only projection;
 - run the provider conformance suite on every supported operating system;
 - keep benchmark/task/scientific policy in the downstream project.
+
+## Canonical taxonomy
+
+The only environment categories are Minecraft/open-world, embodied, GUI, web,
+software, and text world. See `ENVIRONMENT_TAXONOMY.md` for the boundary and
+for the explicit placement of benchmark, replay, synthetic, tool, multi-agent,
+reinforcement-learning, and execution-runtime concerns.

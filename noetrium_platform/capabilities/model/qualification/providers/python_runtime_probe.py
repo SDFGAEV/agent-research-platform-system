@@ -1,10 +1,10 @@
-"""Read-only framework, CUDA and model-config probes through environment/python."""
+"""Read-only framework, CUDA and model-config probes through runtime/python."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.capabilities.environment.python.api import (
+from noetrium_platform.infrastructure.lifecycle.python.api import (
     EnvironmentCommandResult,
     PythonEnvironmentExecutionPort,
 )

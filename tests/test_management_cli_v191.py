@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from noetrium_platform.capabilities.environment.python.api import EnvironmentCommandResult
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
 from noetrium_platform.product.operator.maintenance.runtime.management_cli import _require_command_success, main
 
 

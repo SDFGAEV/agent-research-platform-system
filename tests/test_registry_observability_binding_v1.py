@@ -90,7 +90,7 @@ class _Logging:
 
 
 def test_observation_factory_binds_the_complete_registered_topology() -> None:
-    from noetrium_platform.evidence.observability.composition import (
+    from noetrium_platform.composition.system_observation import (
         SystemObservationFactory,
     )
 

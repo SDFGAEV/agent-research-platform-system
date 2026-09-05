@@ -5,6 +5,9 @@ import math
 from ..api.contracts import MetricDefinition, MetricKind
 
 
+RESERVED_DIMENSIONS = frozenset({"system", "topology_generation"})
+
+
 class MetricRegistry:
     def __init__(self) -> None:
         self._defs: dict[str, MetricDefinition] = {}
@@ -22,7 +25,7 @@ class MetricRegistry:
 
     def validate(self, name: str, dimensions: dict[str, str]) -> None:
         definition = self.definition(name)
-        unknown = set(dimensions) - set(definition.allowed_dimensions)
+        unknown = set(dimensions) - set(definition.allowed_dimensions) - RESERVED_DIMENSIONS
         if unknown:
             raise ValueError(f"metric {name} unknown dimensions: {sorted(unknown)}")
         for key, value in dimensions.items():

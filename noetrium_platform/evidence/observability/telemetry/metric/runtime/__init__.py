@@ -4,6 +4,7 @@ from .emitter_audit import MetricEmitterCoverage, MetricEmitterCoverageAudit
 from .recorder import InMemoryMetricRecorder
 from .registry import MetricRegistry
 from .store import TelemetryStore, TelemetryStoreWriteSession
+from .system_binding import SystemBoundMetricSink
 
 __all__ = [
     "CardinalityPolicy",
@@ -15,6 +16,7 @@ __all__ = [
     "TelemetryBatchRecorder",
     "TelemetryStore",
     "TelemetryStoreWriteSession",
+    "SystemBoundMetricSink",
     "project_execution_capacity_metrics",
 ]
 

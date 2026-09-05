@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from collections import deque
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor
+from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor, SystemIdentity
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
 class SystemRegistryConflict(RuntimeError):
@@ -19,6 +20,22 @@ class InMemorySystemRegistry:
     def __init__(self) -> None:
         self._items: dict[str, SystemDescriptor] = {}
         self._children: dict[str, set[str]] = {}
+        self._generation = 0
+        self._topology_digest: str | None = canonical_digest(())
+
+    @property
+    def generation(self) -> int:
+        """Monotonic topology generation for runtime evidence correlation."""
+
+        return self._generation
+
+    @property
+    def topology_digest(self) -> str:
+        """Lazily compute the canonical descriptor digest once per generation."""
+
+        if self._topology_digest is None:
+            self._topology_digest = canonical_digest(self.list())
+        return self._topology_digest
 
     def register(self, descriptor: SystemDescriptor) -> None:
         key = descriptor.identity.key
@@ -36,6 +53,8 @@ class InMemorySystemRegistry:
         if parent is not None:
             self._children.setdefault(parent, set()).add(key)
         self._children.setdefault(key, set())
+        self._generation += 1
+        self._topology_digest = None
 
     def contains(self, key: str) -> bool:
         return key in self._items
@@ -45,6 +64,14 @@ class InMemorySystemRegistry:
             return self._items[key]
         except KeyError as exc:
             raise SystemRegistryNotFound(key) from exc
+
+    def validate(self, identity: SystemIdentity) -> SystemDescriptor:
+        """Resolve a diagnostic/runtime identity or fail closed."""
+
+        descriptor = self.get(identity.key)
+        if descriptor.identity != identity:
+            raise SystemRegistryConflict(identity.key)
+        return descriptor
 
     def list(self) -> tuple[SystemDescriptor, ...]:
         return tuple(self._items[k] for k in sorted(self._items))

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
 from noetrium_platform.evidence.observability.logging.composition import (
     ExceptionDescriptorBinding,
@@ -55,6 +57,7 @@ def compose_test_logging(
         ),
         exception_descriptor=exception_descriptor,
         planner=meta.capability_composition,
+        systems=meta.systems,
     )
 
 
@@ -98,3 +101,16 @@ def test_exception_policy_is_injected_at_logging_composition() -> None:
     row = store.query(event="BROKEN")[0]
     assert row.exception is not None
     assert row.exception.safe_message == "custom-safe"
+
+
+def test_logging_binding_rejects_unregistered_system_identity() -> None:
+    store = InMemoryLogStore()
+    logging = compose_test_logging(store).logging
+    with pytest.raises(KeyError):
+        logging.bind(
+            logger="platform.test",
+            address=DiagnosticAddress(
+                scope_path=(PLATFORM_SCOPE,),
+                system_path=(SystemIdentity("unknown"),),
+            ),
+        )

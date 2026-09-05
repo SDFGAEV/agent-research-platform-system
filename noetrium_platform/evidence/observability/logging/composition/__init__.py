@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity, SystemRegistryPort
 from noetrium_platform.evidence.observability.logging.query.api import LogQueryPort
 from noetrium_platform.evidence.observability.logging.record.api import (
     ExceptionDescriptorPort,
@@ -79,6 +79,7 @@ def compose_logging_system(
     sink: LogSinkBinding,
     query: LogQueryBinding,
     planner: CapabilityCompositionPlanner,
+    systems: SystemRegistryPort,
     scope: ScopeIdentity = PLATFORM_SCOPE,
     exception_descriptor: ExceptionDescriptorBinding | None = None,
     parent_plan_digest: str | None = None,
@@ -184,6 +185,7 @@ def compose_logging_system(
         logging=StructuredLoggingSystem(
             sink.sink,
             query.query,
+            systems=systems,
             exception_descriptor=descriptor_binding.descriptor,
         ),
         plan=plan,

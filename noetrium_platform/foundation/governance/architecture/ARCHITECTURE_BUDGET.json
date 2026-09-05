@@ -5,10 +5,10 @@
     "source_digest": "4b31d05251e594c99fe9a5e4a9903ab55452fbc2e4ef0c6ef041b767cc9da128",
     "complexity": {
       "top_level_systems": 18,
-      "subsystems": 142,
-      "contract_declarations": 152,
-      "authorities": 160,
-      "import_edges": 4922
+      "subsystems": 143,
+      "contract_declarations": 155,
+      "authorities": 161,
+      "import_edges": 4944
     }
   },
   "migrations": [

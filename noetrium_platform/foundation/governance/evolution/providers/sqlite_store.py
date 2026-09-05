@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 import hashlib
 from pathlib import Path
 import sqlite3
@@ -23,9 +24,6 @@ from noetrium_platform.foundation.governance.evolution.api import (
     TopologyObservation,
 )
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.infrastructure.resources.providers.sqlite_connection import (
-    durable_sqlite_connection,
-)
 
 
 class EvolutionStoreConflict(RuntimeError):
@@ -37,6 +35,10 @@ class EvolutionStoreIntegrityError(RuntimeError):
 
 
 _SCHEMA = "evolution-store.sqlite.v1"
+
+
+def _default_connection(path: str | Path, *, timeout_seconds: float) -> sqlite3.Connection:
+    return sqlite3.connect(path, timeout=timeout_seconds)
 
 
 def _payload(value: object) -> tuple[bytes, str]:
@@ -315,12 +317,19 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
 
     SCHEMA_VERSION = _SCHEMA
 
-    def __init__(self, path: str | Path, *, timeout_seconds: float = 30.0) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        timeout_seconds: float = 30.0,
+        connection_factory: Callable[..., sqlite3.Connection] | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.timeout_seconds = float(timeout_seconds)
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
+        self._connection_factory = connection_factory or _default_connection
         with self._connection() as conn:
             conn.execute("BEGIN IMMEDIATE")
             try:
@@ -357,7 +366,10 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
                 raise
 
     def _connection(self):
-        return durable_sqlite_connection(self.path, timeout_seconds=self.timeout_seconds)
+        return self._connection_factory(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def _put(self, table: str, key_column: str, key: str, value: object) -> None:
         raw, digest = _payload(value)

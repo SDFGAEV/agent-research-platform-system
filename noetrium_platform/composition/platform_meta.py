@@ -23,6 +23,9 @@ from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
     SQLiteResourceLeaseRegistry,
 )
+from noetrium_platform.infrastructure.resources.providers.sqlite_connection import (
+    durable_sqlite_connection,
+)
 from noetrium_platform.infrastructure.resources.allocation.runtime import AtomicEndpointAllocator, InMemoryEndpointAllocator
 from noetrium_platform.infrastructure.resources.compute.runtime import InMemoryComputeInventory, InMemoryComputeScheduler
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePort, ResourceOwnershipPort
@@ -100,7 +103,10 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
     database = root / "platform-meta.sqlite"
     scopes = SQLiteScopeRegistry(database)
     systems = build_default_system_registry()
-    evolution_store = SQLiteEvolutionStore(root / "platform-evolution.sqlite")
+    evolution_store = SQLiteEvolutionStore(
+        root / "platform-evolution.sqlite",
+        connection_factory=durable_sqlite_connection,
+    )
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     resources = SQLiteResourceLeaseRegistry(database)
     endpoint_allocations = AtomicEndpointAllocator(

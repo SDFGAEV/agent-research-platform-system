@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from contextlib import AbstractContextManager
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor
+from noetrium_platform.foundation.governance.system_registry.api import (
+    SystemDescriptor,
+    SystemIdentity,
+)
 from .contracts import (
     DiscoveryReport,
     EvolutionAssessment,
@@ -28,6 +32,16 @@ class SystemEvolutionPort(Protocol):
         ...
 
     def observe(self, observation: TopologyObservation) -> None:
+        ...
+
+    def operation(
+        self,
+        system: SystemIdentity,
+        operation_id: str,
+        *,
+        evidence_refs: tuple[str, ...] = (),
+    ) -> AbstractContextManager[None]:
+        """Observe one synchronous operation without coupling callers to storage."""
         ...
 
     def assess(self) -> EvolutionAssessment:

@@ -357,3 +357,55 @@ def test_persisted_evolution_transitions_rehydrate_contiguous_state(tmp_path) ->
     )
 
     assert restored.current_stage(proposal.proposal_id) is EvolutionStage.QUARANTINED
+
+
+def test_operation_bridge_records_all_outcomes_and_reraises_failures(tmp_path) -> None:
+    import asyncio
+
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        SQLiteEvolutionStore,
+    )
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "operation-observations.sqlite")
+    controller = RegistryDrivenEvolutionController(registry, store=store)
+    system = SystemIdentity("observability", ("logging",))
+
+    with controller.operation(system, "success", evidence_refs=("trace-success",)):
+        pass
+
+    with pytest.raises(RuntimeError, match="downstream failure"):
+        with controller.operation(system, "failure", evidence_refs=("trace-failure",)):
+            raise RuntimeError("downstream failure")
+
+    with pytest.raises(TimeoutError):
+        with controller.operation(system, "timeout"):
+            raise TimeoutError("deadline exceeded")
+
+    with pytest.raises(asyncio.CancelledError):
+        with controller.operation(system, "cancelled"):
+            raise asyncio.CancelledError()
+
+    observations = store.observations()
+    assert tuple(item.outcome for item in observations) == (
+        ObservationOutcome.SUCCESS,
+        ObservationOutcome.FAILURE,
+        ObservationOutcome.TIMEOUT,
+        ObservationOutcome.CANCELLED,
+    )
+    assert all(item.topology_generation == registry.generation for item in observations)
+    assert all(item.topology_digest == registry.topology_digest for item in observations)
+    assert observations[0].evidence_refs == ("trace-success",)
+    assert observations[1].evidence_refs == ("trace-failure",)
+
+
+def test_operation_bridge_binds_observation_to_entry_topology() -> None:
+    registry = build_default_system_registry()
+    controller = RegistryDrivenEvolutionController(registry)
+    system = SystemIdentity("observability", ("logging",))
+    with controller.operation(system, "topology-sensitive"):
+        registry.register(_synthetic_descriptor())
+
+    assessment = controller.assess()
+    assert any(item.kind is SignalKind.TOPOLOGY_DRIFT for item in assessment.signals)
+    assert assessment.drifts[0].kind is DriftKind.STALE_GENERATION

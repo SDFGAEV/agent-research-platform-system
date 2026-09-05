@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
+from contextlib import contextmanager
 from statistics import median
+from time import monotonic
+from uuid import uuid4
 
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
+    SystemIdentity,
     SystemRegistryPort,
 )
 from ..api import EvolutionStateStorePort
@@ -179,6 +183,94 @@ class RegistryDrivenEvolutionController:
                     )
                 )
         self._observations.append(observation)
+
+    @contextmanager
+    def operation(
+        self,
+        system: SystemIdentity,
+        operation_id: str,
+        *,
+        evidence_refs: tuple[str, ...] = (),
+    ):
+        """Capture one operation while preserving the caller's failure semantics."""
+
+        started = monotonic()
+        topology_generation = self._systems.generation
+        topology_digest = self._systems.topology_digest
+        try:
+            yield
+        except TimeoutError as exc:
+            self._emit_operation_observation(
+                system,
+                operation_id,
+                topology_generation,
+                topology_digest,
+                started,
+                ObservationOutcome.TIMEOUT,
+                evidence_refs,
+                exc,
+            )
+            raise
+        except BaseException as exc:
+            outcome = (
+                ObservationOutcome.CANCELLED
+                if isinstance(exc, (KeyboardInterrupt, SystemExit))
+                or exc.__class__.__name__ == "CancelledError"
+                else ObservationOutcome.FAILURE
+            )
+            self._emit_operation_observation(
+                system,
+                operation_id,
+                topology_generation,
+                topology_digest,
+                started,
+                outcome,
+                evidence_refs,
+                exc,
+            )
+            raise
+        else:
+            self._emit_operation_observation(
+                system,
+                operation_id,
+                topology_generation,
+                topology_digest,
+                started,
+                ObservationOutcome.SUCCESS,
+                evidence_refs,
+                None,
+            )
+
+    def _emit_operation_observation(
+        self,
+        system: SystemIdentity,
+        operation_id: str,
+        topology_generation: int,
+        topology_digest: str,
+        started: float,
+        outcome: ObservationOutcome,
+        evidence_refs: tuple[str, ...],
+        operation_error: BaseException | None,
+    ) -> None:
+        observation = TopologyObservation(
+            observation_id=f"runtime:{uuid4().hex}",
+            system=system,
+            topology_generation=topology_generation,
+            topology_digest=topology_digest,
+            operation_id=operation_id,
+            duration_seconds=max(0.0, monotonic() - started),
+            outcome=outcome,
+            evidence_refs=evidence_refs,
+        )
+        try:
+            self.observe(observation)
+        except BaseException as observation_error:
+            if operation_error is not None:
+                raise BaseExceptionGroup(
+                    "operation and observation recording failed",
+                    (operation_error, observation_error),
+                ) from observation_error
+            raise
 
     def assess(self) -> EvolutionAssessment:
         """Produce deterministic signals from the current observation window."""

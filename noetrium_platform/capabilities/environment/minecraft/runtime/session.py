@@ -7,9 +7,17 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     ActionReconciliationResult,
     ActionRequest,
     ActionResult,
+    EnvironmentCapability,
+    EnvironmentCapabilityDescriptor,
+    EnvironmentCapabilityUnsupported,
+    EnvironmentDiagnosticsPort,
     EnvironmentIdentity,
     EnvironmentImplementation,
+    EnvironmentProviderCapabilities,
+    EnvironmentQuery,
+    EnvironmentQueryResult,
     EnvironmentSession,
+    EnvironmentSessionDiagnostics,
     Observation,
 )
 from noetrium_platform.foundation.kernel.kernel import (
@@ -24,6 +32,7 @@ from ..api import (
     MinecraftEnvironmentSpec,
     MinecraftObservationEvent,
     MinecraftSessionRuntimeIdentity,
+    minecraft_action_catalog,
 )
 from ..api.ports import (
     MinecraftBridgePort,
@@ -320,6 +329,75 @@ class MinecraftEnvironmentSession(EnvironmentSession):
         self._assert_open()
         return self._actions.reconcile(effect, context)
 
+    def query(self, request: EnvironmentQuery) -> EnvironmentQueryResult:
+        self._assert_open()
+        if request.query_type == "capabilities":
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                {
+                    "environment": "minecraft",
+                    "generation": self.generation,
+                    "capabilities": [
+                        {
+                            "capability_id": descriptor.capability_id,
+                            "version": descriptor.version,
+                            "action_types": list(descriptor.action_types),
+                            "query_types": list(descriptor.query_types),
+                            "metadata": descriptor.metadata,
+                        }
+                        for descriptor in self.capability_descriptors()
+                    ],
+                },
+                self._last_observation,
+            )
+        if request.query_type == "state":
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                self._state_payload(),
+                self._last_observation,
+            )
+        if request.query_type == "entity":
+            query = str(request.payload.get("name", "")).lower() if isinstance(request.payload, Mapping) else ""
+            entities = [
+                value.compact()
+                for value in self._state.entities.values()
+                if not query or query in str(value.compact()).lower()
+            ]
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                {"entities": entities, "count": len(entities)},
+                self._last_observation,
+            )
+        if request.query_type == "task":
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                {
+                    "task_id": request.context.task_id,
+                    "state_digest": self._state.snapshot_digest(),
+                },
+                self._last_observation,
+            )
+        raise EnvironmentCapabilityUnsupported(f"query:{request.query_type}")
+
+    def capability_descriptors(self) -> tuple[EnvironmentCapabilityDescriptor, ...]:
+        return (
+            EnvironmentCapabilityDescriptor(
+                capability_id="minecraft.world",
+                version=self.implementation.spec.schema_version,
+                action_types=tuple(contract.action_type for contract in minecraft_action_catalog()),
+                query_types=("capabilities", "state", "entity", "task"),
+                metadata={
+                    "bridge": "replaceable",
+                    "max_entities": self.implementation.spec.max_entities,
+                    "state_digest": self._state.snapshot_digest(),
+                },
+            ),
+        )
+
     def checkpoint(self) -> bytes:
         self._assert_open()
         provider = self.implementation.checkpoint
@@ -411,6 +489,24 @@ class MinecraftEnvironmentSession(EnvironmentSession):
             "MC_CHECKPOINT_RESTORED",
             level="INFO",
             attributes={"bytes": len(payload), "world_bytes": len(restored.world_payload)},
+        )
+
+    def diagnostics_snapshot(self) -> EnvironmentSessionDiagnostics:
+        supported = [
+            EnvironmentCapability.DIAGNOSTICS,
+            EnvironmentCapability.RECONCILE,
+            EnvironmentCapability.QUERY,
+        ]
+        if self.implementation.checkpoint is not None:
+            supported.extend((EnvironmentCapability.SNAPSHOT, EnvironmentCapability.RESTORE))
+        return EnvironmentSessionDiagnostics(
+            session_id=self.session_id,
+            environment=self.identity,
+            generation=self.generation,
+            ready=not self._closed and not self._restore_faulted,
+            closed=self._closed,
+            capabilities=EnvironmentProviderCapabilities(tuple(supported)),
+            state_digest=self._state.snapshot_digest(),
         )
 
     def diagnostics(self) -> dict[str, object]:

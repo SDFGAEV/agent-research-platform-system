@@ -15,6 +15,12 @@ class EnvironmentCapability(StrEnum):
     RESTORE = "restore"
     RECONCILE = "reconcile"
     DIAGNOSTICS = "diagnostics"
+    QUERY = "query"
+    COORDINATION = "coordination"
+    RAW_RECORDS = "raw_records"
+    ARTIFACTS = "artifacts"
+    TASKS = "tasks"
+    REPLAY = "replay"
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +37,13 @@ class EnvironmentProviderCapabilities:
 
     @classmethod
     def fully_recoverable(cls) -> "EnvironmentProviderCapabilities":
-        return cls(tuple(EnvironmentCapability))
+        """Return the baseline lifecycle set, not every optional domain feature."""
+        return cls((
+            EnvironmentCapability.SNAPSHOT,
+            EnvironmentCapability.RESTORE,
+            EnvironmentCapability.RECONCILE,
+            EnvironmentCapability.DIAGNOSTICS,
+        ))
 
     def supports(self, capability: EnvironmentCapability) -> bool:
         if not isinstance(capability, EnvironmentCapability):

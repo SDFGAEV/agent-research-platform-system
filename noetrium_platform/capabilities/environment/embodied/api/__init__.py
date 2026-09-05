@@ -11,14 +11,23 @@ from .contracts import (
     SensorModality,
     SensorSpec,
 )
-from .ports import EmbodiedEnvironmentPort, EmbodiedTrajectorySinkPort
+from .ports import (
+    EmbodiedCapabilityPort,
+    EmbodiedCheckpointPort,
+    EmbodiedEnvironmentPort,
+    EmbodiedQueryPort,
+    EmbodiedTrajectorySinkPort,
+)
 
 __all__ = [
     "ActionKind",
     "ActionSpec",
     "EmbodiedActionCommand",
     "EmbodiedCaptureReceipt",
+    "EmbodiedCapabilityPort",
+    "EmbodiedCheckpointPort",
     "EmbodiedEnvironmentPort",
+    "EmbodiedQueryPort",
     "EmbodiedEvent",
     "EmbodiedEventKind",
     "EmbodiedTrajectorySinkPort",

@@ -208,6 +208,15 @@ class _LeaseGuardedEnvironmentSession:
     def reconcile(self, effect, context):
         return self._call("reconcile", effect, context)
 
+    def query(self, request):
+        return self._call("query", request)
+
+    def capability_descriptors(self):
+        return self._call("capability_descriptors")
+
+    def diagnostics_snapshot(self):
+        return self._call("diagnostics_snapshot")
+
     def checkpoint(self) -> bytes:
         return self._call("checkpoint")
 

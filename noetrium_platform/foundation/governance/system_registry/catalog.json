@@ -409,6 +409,39 @@
     ],
     "components": []
   },
+  "environment/benchmark": {
+    "authority": "benchmark_environment",
+    "must_not_own": "benchmark scoring authority, provider SDK internals or project semantics",
+    "owns": "provider-neutral external benchmark case identity and environment adaptation",
+    "package_prefix": "noetrium_platform.capabilities.environment.benchmark",
+    "parent": "environment",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": ["environment", "artifact", "reliability"],
+    "provides": ["environment.benchmark.contract"],
+    "components": []
+  },
+  "environment/synthetic": {
+    "authority": "synthetic_environment",
+    "must_not_own": "project semantics, benchmark truth or external provider lifecycle",
+    "owns": "deterministic synthetic environment composition for tests and fast experiments",
+    "package_prefix": "noetrium_platform.capabilities.environment.synthetic",
+    "parent": "environment",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": ["environment", "reliability"],
+    "provides": ["environment.synthetic.contract"],
+    "components": []
+  },
+  "environment/replay": {
+    "authority": "replay_environment",
+    "must_not_own": "live environment mutation or derived metric authority",
+    "owns": "immutable trajectory replay and regression environment semantics",
+    "package_prefix": "noetrium_platform.capabilities.environment.replay",
+    "parent": "environment",
+    "shape": ["api", "runtime", "providers", "composition"],
+    "requires": ["environment", "artifact"],
+    "provides": ["environment.replay.contract"],
+    "components": []
+  },
   "environment/python": {
     "authority": "python_environment",
     "must_not_own": "generic process supervisor",

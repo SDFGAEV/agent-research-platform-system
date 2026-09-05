@@ -25,7 +25,14 @@ class StateMachineEnvironmentAssembly:
 
     @property
     def capabilities(self) -> EnvironmentProviderCapabilities:
-        return EnvironmentProviderCapabilities.fully_recoverable()
+        from noetrium_platform.capabilities.environment.api import EnvironmentCapability
+        return EnvironmentProviderCapabilities((
+            EnvironmentCapability.SNAPSHOT,
+            EnvironmentCapability.RESTORE,
+            EnvironmentCapability.RECONCILE,
+            EnvironmentCapability.DIAGNOSTICS,
+            EnvironmentCapability.QUERY,
+        ))
 
     def open_session(
         self,

@@ -36,4 +36,32 @@ class EmbodiedTrajectorySinkPort(Protocol):
     ) -> EmbodiedCaptureReceipt: ...
 
 
-__all__ = ["EmbodiedEnvironmentPort", "EmbodiedTrajectorySinkPort"]
+@runtime_checkable
+class EmbodiedCheckpointPort(Protocol):
+    def capture(self, *, episode: EpisodeSpec) -> bytes: ...
+
+    def restore(self, payload: bytes, *, episode: EpisodeSpec) -> None: ...
+
+
+@runtime_checkable
+class EmbodiedQueryPort(Protocol):
+    def query(
+        self,
+        query_type: str,
+        payload: object,
+        context: ExecutionContext,
+    ) -> tuple[EmbodiedEvent, ...]: ...
+
+
+@runtime_checkable
+class EmbodiedCapabilityPort(Protocol):
+    def capability_descriptors(self) -> tuple[object, ...]: ...
+
+
+__all__ = [
+    "EmbodiedCapabilityPort",
+    "EmbodiedCheckpointPort",
+    "EmbodiedEnvironmentPort",
+    "EmbodiedQueryPort",
+    "EmbodiedTrajectorySinkPort",
+]

@@ -16,6 +16,21 @@ from .provider import (
     EnvironmentSessionDiagnostics,
     EnvironmentSessionServices,
 )
+from .interaction import (
+    EnvironmentActionLifecycle,
+    EnvironmentActionPhase,
+    EnvironmentCapabilityDescriptor,
+    EnvironmentCoordinationPort,
+    EnvironmentCoordinationReceipt,
+    EnvironmentCoordinationRequest,
+    EnvironmentQuery,
+    EnvironmentQueryKind,
+    EnvironmentQueryPort,
+    EnvironmentQueryResult,
+    EnvironmentRawEventReceipt,
+    EnvironmentRawEventRecord,
+    EnvironmentRawRecordSinkPort,
+)
 
 _LAZY_RUNTIME_EXPORTS = frozenset({
     "ActionIdentityViolation",
@@ -77,6 +92,14 @@ __all__ = [
     "EnvironmentDiagnosticsPort", "EnvironmentProviderCapabilities",
     "EnvironmentProviderPort", "EnvironmentSessionDiagnostics",
     "EnvironmentSessionServices",
+    "EnvironmentActionLifecycle", "EnvironmentActionPhase",
+    "EnvironmentCapabilityDescriptor",
+    "EnvironmentCoordinationPort", "EnvironmentCoordinationReceipt",
+    "EnvironmentCoordinationRequest",
+    "EnvironmentQuery", "EnvironmentQueryKind", "EnvironmentQueryPort",
+    "EnvironmentQueryResult",
+    "EnvironmentRawEventReceipt", "EnvironmentRawEventRecord",
+    "EnvironmentRawRecordSinkPort",
     "DurablePreparedActionSession", "EnvironmentIdentity",
     "EnvironmentImplementation", "EnvironmentSession", "Observation",
     "action_request_digest", "require_action_recovery_handle_identity",

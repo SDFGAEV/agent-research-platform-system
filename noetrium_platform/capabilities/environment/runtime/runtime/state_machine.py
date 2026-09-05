@@ -21,9 +21,16 @@ from ..api import (
     ActionIdentityViolation,
     ActionRequest,
     ActionResult,
+    EnvironmentCapability,
+    EnvironmentCapabilityDescriptor,
+    EnvironmentCapabilityUnsupported,
     EnvironmentIdentity,
     EnvironmentImplementation,
+    EnvironmentProviderCapabilities,
+    EnvironmentQuery,
+    EnvironmentQueryResult,
     EnvironmentSession,
+    EnvironmentSessionDiagnostics,
     Observation,
     StateMachineDynamicsPort,
     StateMachineEnvironmentSpec,
@@ -126,6 +133,51 @@ class StateMachineEnvironmentSession(EnvironmentSession):
         del context
         self._assert_open()
         return self._observation(kind="state_machine_snapshot")
+
+    def query(self, request: EnvironmentQuery) -> EnvironmentQueryResult:
+        self._assert_open()
+        if request.query_type == "state":
+            state = thaw_json_mapping(self._state)
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                {
+                    "state": state,
+                    "state_digest": canonical_digest(state),
+                    "generation": self.generation,
+                },
+                self._observation(kind="state_machine_query"),
+            )
+        if request.query_type == "capabilities":
+            return EnvironmentQueryResult(
+                request.query_id,
+                True,
+                {
+                    "capabilities": [
+                        {
+                            "capability_id": descriptor.capability_id,
+                            "version": descriptor.version,
+                            "action_types": list(descriptor.action_types),
+                            "query_types": list(descriptor.query_types),
+                            "metadata": descriptor.metadata,
+                        }
+                        for descriptor in self.capability_descriptors()
+                    ],
+                },
+                self._observation(kind="state_machine_capabilities"),
+            )
+        raise EnvironmentCapabilityUnsupported(f"query:{request.query_type}")
+
+    def capability_descriptors(self) -> tuple[EnvironmentCapabilityDescriptor, ...]:
+        return (
+            EnvironmentCapabilityDescriptor(
+                "environment.state_machine",
+                self.implementation.spec.schema_version,
+                action_types=self.implementation.spec.action_types,
+                query_types=("state", "capabilities"),
+                metadata={"deterministic": True},
+            ),
+        )
 
     def act(self, request: ActionRequest) -> ActionResult:
         self._assert_open()
@@ -239,7 +291,13 @@ class StateMachineEnvironmentSession(EnvironmentSession):
             generation=self.generation,
             ready=not self._closed,
             closed=self._closed,
-            capabilities=EnvironmentProviderCapabilities.fully_recoverable(),
+            capabilities=EnvironmentProviderCapabilities((
+                EnvironmentCapability.SNAPSHOT,
+                EnvironmentCapability.RESTORE,
+                EnvironmentCapability.RECONCILE,
+                EnvironmentCapability.DIAGNOSTICS,
+                EnvironmentCapability.QUERY,
+            )),
             state_digest=canonical_digest(self._state),
         )
 

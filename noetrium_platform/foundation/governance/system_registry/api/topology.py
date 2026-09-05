@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 from functools import lru_cache
 from importlib.resources import files
+from pathlib import Path
 
 from .contracts import (
     STANDARD_SYSTEM_SHAPE,
@@ -36,6 +37,18 @@ def _string_tuple(value: object, *, field: str, key: str) -> tuple[str, ...]:
     if len(result) != len(set(result)):
         raise RuntimeError(f"duplicate packaged catalog {field} for {key!r}")
     return result
+
+
+def _package_prefix_exists(prefix: str) -> bool:
+    """Check that catalog ownership points at a real source package/module."""
+
+    root = Path(__file__).resolve().parents[5]
+    candidate = root.joinpath(*prefix.split("."))
+    return (
+        candidate.is_dir()
+        or candidate.with_suffix(".py").is_file()
+        or (candidate / "__init__.py").is_file()
+    )
 
 
 def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
@@ -88,6 +101,11 @@ def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
         if not parts or "/".join(parts) != key:
             raise RuntimeError(f"invalid packaged catalog identity for {key!r}")
         semantics = _parse_semantics(key, value)
+        if not _package_prefix_exists(semantics.package_prefix):
+            raise RuntimeError(
+                f"catalog package_prefix {semantics.package_prefix!r} for {key!r} "
+                "does not resolve to a source package/module"
+            )
         expected_parent = None if len(parts) == 1 else "/".join(parts[:-1])
         if semantics.parent != expected_parent:
             raise RuntimeError(f"parent drift for {key!r}")
@@ -106,6 +124,13 @@ def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
                 )
             if dependency == key:
                 raise RuntimeError(f"catalog node {key!r} cannot require itself")
+        for component in semantics.components:
+            if component not in known:
+                raise RuntimeError(
+                    f"catalog component {component!r} for {key!r} is not registered"
+                )
+            if component == key:
+                raise RuntimeError(f"catalog node {key!r} cannot contain itself as a component")
         for capability in semantics.provides:
             previous = capability_owners.get(capability)
             if previous is not None:

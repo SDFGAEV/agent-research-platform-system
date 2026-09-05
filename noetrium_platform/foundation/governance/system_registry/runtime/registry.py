@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Callable
 import hashlib
+import json
 
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
@@ -13,10 +14,36 @@ from noetrium_platform.foundation.governance.system_registry.api import (
 
 
 def _topology_digest(descriptors: tuple[SystemDescriptor, ...]) -> str:
-    """Fingerprint the registry's ordered descriptor snapshot without kernel coupling."""
+    """Fingerprint a canonical, language-independent descriptor snapshot."""
 
-    payload = "\n".join(repr(descriptor) for descriptor in descriptors)
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    payload = [
+        {
+            "identity": {
+                "system_id": descriptor.identity.system_id,
+                "subsystem_path": list(descriptor.identity.subsystem_path),
+            },
+            "layer": descriptor.layer.value,
+            "package_prefix": descriptor.package_prefix,
+            "provides": list(descriptor.provides),
+            "requires": list(descriptor.requires),
+            "authorities": [
+                {
+                    "authority_id": authority.authority_id,
+                    "state_kinds": list(authority.state_kinds),
+                    "effect_kinds": list(authority.effect_kinds),
+                    "artifact_kinds": list(authority.artifact_kinds),
+                }
+                for authority in descriptor.authorities
+            ],
+            "components": list(descriptor.components),
+            "owns": descriptor.owns,
+            "must_not_own": descriptor.must_not_own,
+            "shape": list(descriptor.shape),
+        }
+        for descriptor in descriptors
+    ]
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 class SystemRegistryConflict(RuntimeError):

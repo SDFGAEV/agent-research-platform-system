@@ -116,10 +116,34 @@ class SystemDescriptor:
         return self.authorities[0].authority_id
 
 
+@dataclass(frozen=True, slots=True)
+class SystemRegistryChange:
+    """Immutable topology mutation snapshot delivered to registry subscribers."""
+
+    registered: tuple[SystemDescriptor, ...]
+    generation: int
+    topology_digest: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.registered, tuple) or not self.registered:
+            raise ValueError("registered must be a non-empty tuple")
+        if not all(isinstance(item, SystemDescriptor) for item in self.registered):
+            raise TypeError("registered must contain SystemDescriptor values")
+        if type(self.generation) is not int or self.generation <= 0:
+            raise ValueError("generation must be a positive integer")
+        if (
+            not isinstance(self.topology_digest, str)
+            or len(self.topology_digest) != 64
+            or any(char not in "0123456789abcdef" for char in self.topology_digest)
+        ):
+            raise ValueError("topology_digest must be a lowercase SHA-256 digest")
+
+
 __all__ = [
     "AuthorityDescriptor",
     "STANDARD_SYSTEM_SHAPE",
     "SystemDescriptor",
     "SystemIdentity",
+    "SystemRegistryChange",
     "SystemLayer",
 ]

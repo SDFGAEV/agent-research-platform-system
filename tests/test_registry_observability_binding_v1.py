@@ -7,6 +7,7 @@ from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
     SystemIdentity,
     SystemLayer,
+    SystemRegistryChange,
 )
 from noetrium_platform.foundation.governance.system_registry.runtime import (
     SystemRegistryNotFound,
@@ -158,12 +159,8 @@ def test_observation_factory_rebinds_when_registry_grows() -> None:
 
 def test_registry_batches_topology_notifications() -> None:
     systems = build_default_system_registry()
-    events: list[tuple[tuple[str, ...], int, str]] = []
-    systems.subscribe(
-        lambda descriptors, generation, digest: events.append(
-            (tuple(item.identity.key for item in descriptors), generation, digest)
-        )
-    )
+    events: list[object] = []
+    systems.subscribe(events.append)
     descriptors = tuple(
         SystemDescriptor(
             identity=SystemIdentity("governance", (name,)),
@@ -183,9 +180,11 @@ def test_registry_batches_topology_notifications() -> None:
         "governance/batch_b",
     )
     assert len(events) == 1
-    assert events[0][0] == (
+    assert isinstance(events[0], SystemRegistryChange)
+    change = events[0]
+    assert tuple(item.identity.key for item in change.registered) == (
         "governance/batch_a",
         "governance/batch_b",
     )
-    assert events[0][1] == systems.generation
-    assert events[0][2] == systems.topology_digest
+    assert change.generation == systems.generation
+    assert change.topology_digest == systems.topology_digest

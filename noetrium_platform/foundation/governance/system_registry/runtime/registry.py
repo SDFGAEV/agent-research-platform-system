@@ -7,6 +7,7 @@ import hashlib
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
     SystemIdentity,
+    SystemRegistryChange,
     SystemRegistryObserver,
 )
 
@@ -95,10 +96,15 @@ class InMemorySystemRegistry:
 
         self._topology_digest = None
         digest = self.topology_digest
+        change = SystemRegistryChange(
+            registered=ordered,
+            generation=self._generation,
+            topology_digest=digest,
+        )
         failures: list[BaseException] = []
         for observer in tuple(self._observers):
             try:
-                observer(ordered, self._generation, digest)
+                observer(change)
             except BaseException as exc:
                 failures.append(exc)
         if failures:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 from collections.abc import Callable
 from typing import Protocol, runtime_checkable
-from .contracts import SystemDescriptor, SystemIdentity
+from .contracts import SystemDescriptor, SystemIdentity, SystemRegistryChange
 
 
-SystemRegistryObserver = Callable[[tuple[SystemDescriptor, ...], int, str], None]
+SystemRegistryObserver = Callable[[SystemRegistryChange], None]
 
 @runtime_checkable
 class SystemRegistryPort(Protocol):

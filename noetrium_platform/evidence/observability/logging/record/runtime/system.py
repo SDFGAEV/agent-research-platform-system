@@ -7,6 +7,7 @@ from threading import RLock
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
     SystemIdentity,
+    SystemRegistryChange,
     SystemRegistryPort,
 )
 from noetrium_platform.evidence.observability.logging.query.api import LogQueryPort
@@ -172,9 +173,7 @@ class SystemObservationFactory:
 
     def _on_topology_change(
         self,
-        _descriptors: tuple[SystemDescriptor, ...],
-        _generation: int,
-        _digest: str,
+        _change: SystemRegistryChange,
     ) -> None:
         if not self._active:
             return

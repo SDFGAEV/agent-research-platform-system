@@ -7,7 +7,6 @@ from typing import cast
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
 from noetrium_platform.evidence.artifact.catalog.runtime import InMemoryArtifactRegistry
-from noetrium_platform.evidence.artifact.catalog.providers import SQLiteArtifactRegistry
 from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegistry
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
@@ -141,7 +140,12 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
         portfolio=SQLitePortfolioCatalog(database, scopes),
         experimentation=experimentation,
         environments=SQLiteExecutionEnvironmentCatalog(root / "platform-environments.sqlite", scopes),
-        artifacts=SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
+        artifacts=cast(
+            ArtifactRegistryPort,
+            import_module(
+                "noetrium_platform.evidence.artifact.catalog.providers"
+            ).SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
+        ),
         datasets=cast(
             DatasetRegistryPort,
             import_module(

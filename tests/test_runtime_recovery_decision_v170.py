@@ -90,5 +90,21 @@ class RuntimeRecoveryDecisionV170Tests(unittest.TestCase):
         self.assertEqual(payload["recommendations"][0]["action"], "rebuild_derived_state")
 
 
+    def test_assess_exposes_safe_conditional_and_unknown_closure(self):
+        service = RuntimeRecoveryDecisionService()
+        safe = service.assess(PlatformStatus((SubsystemSnapshot(
+            "forensics", HealthState.DEGRADED_EVIDENCE, "projection stale",
+            reason_codes=("forensic_projection_stale",),
+        ),)))
+        self.assertTrue(safe.can_run_automatically)
+        self.assertEqual(safe.safe_actions, (RecoveryActionCode.REBUILD_DERIVED_STATE,))
+        unknown = service.assess(PlatformStatus((SubsystemSnapshot(
+            "future_component", HealthState.FAILED, "future reason",
+            reason_codes=("future_reason",),
+        ),)))
+        self.assertFalse(unknown.can_run_automatically)
+        self.assertEqual(unknown.unknown_reason_codes, ("future_reason",))
+
+
 if __name__ == "__main__":
     unittest.main()

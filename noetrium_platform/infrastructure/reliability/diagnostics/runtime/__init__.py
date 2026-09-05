@@ -4,7 +4,7 @@ from .debug_snapshot import DebugSnapshot, DebugSnapshotService
 from .diagnosis import FailureDiagnosis, FailureDiagnosisService
 from .incident import IncidentReport, IncidentService
 from .logging import DiagnosticLogQueryAdapter
-from .runtime_recovery import RuntimeRecoveryDecisionService
+from .runtime_recovery import RuntimeAutomationAssessment, RuntimeRecoveryDecisionService
 from .triage import DeterministicTriagePlan, TriagePlanService, TriageStep
 from .verify import EvidenceVerificationReport, EvidenceVerifier
 
@@ -19,6 +19,7 @@ __all__ = [
     "FailureDiagnosisService",
     "IncidentReport",
     "IncidentService",
+    "RuntimeAutomationAssessment",
     "RuntimeRecoveryDecisionService",
     "DeterministicTriagePlan",
     "TriagePlanService",

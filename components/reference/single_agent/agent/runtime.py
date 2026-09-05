@@ -10,7 +10,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
-from threading import RLock
 from typing import Protocol
 
 from noetrium.contracts.json import (
@@ -141,7 +140,6 @@ class JsonlReferenceAgentProgress(ReferenceAgentProgressPort):
     def __init__(self, path: Path) -> None:
         self._path = Path(path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock = RLock()
 
     @staticmethod
     def _state_payload(state: ReferenceAgentState) -> dict[str, JsonValue]:
@@ -166,11 +164,16 @@ class JsonlReferenceAgentProgress(ReferenceAgentProgressPort):
             "payload": event.payload,
         }
         line = (canonical_text(document) + "\n").encode("utf-8")
-        with self._lock:
-            with self._path.open("ab") as stream:
-                stream.write(line)
-                stream.flush()
-                os.fsync(stream.fileno())
+        descriptor = os.open(
+            self._path,
+            os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+            0o600,
+        )
+        try:
+            os.write(descriptor, line)
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
 
     def checkpoint(self, state: ReferenceAgentState, *, context: ExecutionContext) -> str:
         event = ReferenceAgentEvent(
@@ -190,17 +193,16 @@ class JsonlReferenceAgentProgress(ReferenceAgentProgressPort):
             return None
         latest: Mapping[str, JsonValue] | None = None
         latest_digest: str | None = None
-        with self._lock:
-            for line in self._path.read_text(encoding="utf-8").splitlines():
-                if not line.strip():
-                    continue
-                document = strict_json_loads(line)
-                if isinstance(document, Mapping) and document.get("run_id") == run_id and document.get("event_type") == "checkpoint":
-                    payload = document.get("payload")
-                    if isinstance(payload, Mapping):
-                        latest = payload
-                        digest = document.get("state_digest")
-                        latest_digest = digest if isinstance(digest, str) else None
+        for line in self._path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            document = strict_json_loads(line)
+            if isinstance(document, Mapping) and document.get("run_id") == run_id and document.get("event_type") == "checkpoint":
+                payload = document.get("payload")
+                if isinstance(payload, Mapping):
+                    latest = payload
+                    digest = document.get("state_digest")
+                    latest_digest = digest if isinstance(digest, str) else None
         if not isinstance(latest, Mapping):
             return None
         state = _state_from_payload(latest)

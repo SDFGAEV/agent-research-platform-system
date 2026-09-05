@@ -7,9 +7,9 @@ and checkpoint storage.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from contextlib import contextmanager
 import sqlite3
 from pathlib import Path
-from threading import RLock
 
 from noetrium.contracts.json import JsonValue, canonical_text, require_sha256, strict_json_loads
 
@@ -101,14 +101,10 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock = RLock()
-        self._connection = sqlite3.connect(
-            str(self.path), check_same_thread=False, isolation_level=None
-        )
-        with self._lock:
-            self._connection.execute("PRAGMA journal_mode=WAL")
-            self._connection.execute("PRAGMA synchronous=FULL")
-            self._connection.execute(
+        with self._connection() as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA synchronous=FULL")
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS multi_agent_deliveries (
                     receipt_id TEXT PRIMARY KEY,
@@ -118,7 +114,7 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
                 )
                 """
             )
-            self._connection.execute(
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS multi_agent_checkpoints (
                     checkpoint_digest TEXT PRIMARY KEY,
@@ -127,7 +123,7 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
                 )
                 """
             )
-            self._connection.execute(
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS multi_agent_latest (
                     conversation_id TEXT PRIMARY KEY,
@@ -135,6 +131,18 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
                 )
                 """
             )
+
+    @contextmanager
+    def _connection(self):
+        connection = sqlite3.connect(
+            str(self.path), timeout=30.0, isolation_level=None
+        )
+        try:
+            connection.execute("PRAGMA busy_timeout=30000")
+            connection.execute("PRAGMA synchronous=FULL")
+            yield connection
+        finally:
+            connection.close()
     def record(
         self,
         message: MultiAgentMessage,
@@ -146,60 +154,60 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
             raise ValueError("multi-agent journal receipt/message identity mismatch")
         message_json = canonical_text(_message_document(message))
         receipt_json = canonical_text(_receipt_document(receipt))
-        with self._lock:
-            self._connection.execute("BEGIN IMMEDIATE")
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
             try:
-                row = self._connection.execute(
+                row = connection.execute(
                     "SELECT message_json, receipt_json FROM multi_agent_deliveries "
                     "WHERE receipt_id = ?",
                     (receipt.receipt_id,),
                 ).fetchone()
                 if row is not None and (row[0] != message_json or row[1] != receipt_json):
                     raise ValueError("multi-agent journal receipt identity collision")
-                self._connection.execute(
+                connection.execute(
                     "INSERT OR IGNORE INTO multi_agent_deliveries "
                     "(receipt_id, message_id, message_json, receipt_json) VALUES (?, ?, ?, ?)",
                     (receipt.receipt_id, message.message_id, message_json, receipt_json),
                 )
-                self._connection.execute("COMMIT")
+                connection.execute("COMMIT")
             except BaseException:
-                self._connection.execute("ROLLBACK")
+                connection.execute("ROLLBACK")
                 raise
 
     def checkpoint(self, checkpoint: MultiAgentCheckpoint) -> None:
         if type(checkpoint) is not MultiAgentCheckpoint:
             raise TypeError("multi-agent journal checkpoint must be typed")
         document = canonical_text(_checkpoint_document(checkpoint))
-        with self._lock:
-            self._connection.execute("BEGIN IMMEDIATE")
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
             try:
-                row = self._connection.execute(
+                row = connection.execute(
                     "SELECT checkpoint_json FROM multi_agent_checkpoints "
                     "WHERE checkpoint_digest = ?",
                     (checkpoint.checkpoint_digest,),
                 ).fetchone()
                 if row is not None and row[0] != document:
                     raise ValueError("multi-agent journal checkpoint identity collision")
-                self._connection.execute(
+                connection.execute(
                     "INSERT OR IGNORE INTO multi_agent_checkpoints "
                     "(checkpoint_digest, conversation_id, checkpoint_json) VALUES (?, ?, ?)",
                     (checkpoint.checkpoint_digest, checkpoint.conversation_id, document),
                 )
-                self._connection.execute(
+                connection.execute(
                     "INSERT INTO multi_agent_latest (conversation_id, checkpoint_digest) "
                     "VALUES (?, ?) ON CONFLICT(conversation_id) DO UPDATE SET "
                     "checkpoint_digest = excluded.checkpoint_digest",
                     (checkpoint.conversation_id, checkpoint.checkpoint_digest),
                 )
-                self._connection.execute("COMMIT")
+                connection.execute("COMMIT")
             except BaseException:
-                self._connection.execute("ROLLBACK")
+                connection.execute("ROLLBACK")
                 raise
     def latest_checkpoint(self, conversation_id: str) -> MultiAgentCheckpoint | None:
         if type(conversation_id) is not str or not conversation_id.strip():
             raise ValueError("multi-agent journal conversation_id must be non-empty")
-        with self._lock:
-            row = self._connection.execute(
+        with self._connection() as connection:
+            row = connection.execute(
                 "SELECT c.checkpoint_json, c.checkpoint_digest "
                 "FROM multi_agent_latest l JOIN multi_agent_checkpoints c "
                 "ON c.checkpoint_digest = l.checkpoint_digest "
@@ -218,8 +226,8 @@ class SQLiteMultiAgentJournal(MultiAgentJournalPort):
         return checkpoint
 
     def close(self) -> None:
-        with self._lock:
-            self._connection.close()
+        """Retained as a lifecycle no-op; connections are scoped per operation."""
+        return None
 
 
 __all__ = ["SQLiteMultiAgentJournal"]

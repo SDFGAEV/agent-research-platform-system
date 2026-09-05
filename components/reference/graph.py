@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 import sqlite3
 from pathlib import Path
@@ -152,14 +153,10 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock = RLock()
-        self._connection = sqlite3.connect(
-            str(self.path), check_same_thread=False, isolation_level=None,
-        )
-        with self._lock:
-            self._connection.execute("PRAGMA journal_mode=WAL")
-            self._connection.execute("PRAGMA synchronous=FULL")
-            self._connection.execute(
+        with self._connection() as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA synchronous=FULL")
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS graph_checkpoints (
                     checkpoint_id TEXT PRIMARY KEY,
@@ -168,7 +165,7 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
                 )
                 """
             )
-            self._connection.execute(
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS graph_threads (
                     thread_id TEXT PRIMARY KEY,
@@ -176,6 +173,18 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
                 )
                 """
             )
+
+    @contextmanager
+    def _connection(self):
+        connection = sqlite3.connect(
+            str(self.path), timeout=30.0, isolation_level=None
+        )
+        try:
+            connection.execute("PRAGMA busy_timeout=30000")
+            connection.execute("PRAGMA synchronous=FULL")
+            yield connection
+        finally:
+            connection.close()
 
     @staticmethod
     def _document(snapshot: GraphSnapshot) -> dict[str, JsonValue]:
@@ -220,30 +229,30 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
         if type(snapshot) is not GraphSnapshot:
             raise TypeError("graph checkpointer accepts GraphSnapshot")
         document = canonical_text(self._document(snapshot))
-        with self._lock:
-            self._connection.execute("BEGIN IMMEDIATE")
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
             try:
-                row = self._connection.execute(
+                row = connection.execute(
                     "SELECT snapshot_json FROM graph_checkpoints "
                     "WHERE checkpoint_id = ?",
                     (snapshot.checkpoint_id,),
                 ).fetchone()
                 if row is not None and row[0] != document:
                     raise ValueError("graph checkpoint identity collision")
-                self._connection.execute(
+                connection.execute(
                     "INSERT OR IGNORE INTO graph_checkpoints "
                     "(checkpoint_id, thread_id, snapshot_json) VALUES (?, ?, ?)",
                     (snapshot.checkpoint_id, snapshot.thread_id, document),
                 )
-                self._connection.execute(
+                connection.execute(
                     "INSERT INTO graph_threads (thread_id, latest_checkpoint_id) "
                     "VALUES (?, ?) ON CONFLICT(thread_id) DO UPDATE SET "
                     "latest_checkpoint_id = excluded.latest_checkpoint_id",
                     (snapshot.thread_id, snapshot.checkpoint_id),
                 )
-                self._connection.execute("COMMIT")
+                connection.execute("COMMIT")
             except BaseException:
-                self._connection.execute("ROLLBACK")
+                connection.execute("ROLLBACK")
                 raise
 
     def load(self, thread_id: str) -> GraphSnapshot | None:
@@ -253,8 +262,8 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
     def history(self, thread_id: str) -> tuple[GraphSnapshot, ...]:
         if type(thread_id) is not str or not thread_id.strip():
             raise ValueError("graph checkpoint thread_id must be non-empty")
-        with self._lock:
-            rows = self._connection.execute(
+        with self._connection() as connection:
+            rows = connection.execute(
                 "SELECT checkpoint_id, snapshot_json FROM graph_checkpoints "
                 "WHERE thread_id = ? ORDER BY rowid",
                 (thread_id,),
@@ -263,8 +272,8 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
 
     def load_checkpoint(self, checkpoint_id: str) -> GraphSnapshot | None:
         require_sha256(checkpoint_id, "graph checkpoint_id")
-        with self._lock:
-            row = self._connection.execute(
+        with self._connection() as connection:
+            row = connection.execute(
                 "SELECT thread_id, snapshot_json FROM graph_checkpoints "
                 "WHERE checkpoint_id = ?",
                 (checkpoint_id,),
@@ -274,8 +283,8 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
         return self._decode(row[0], checkpoint_id, row[1])
 
     def close(self) -> None:
-        with self._lock:
-            self._connection.close()
+        """Retained as a lifecycle no-op; connections are scoped per operation."""
+        return None
 
 
 class StateGraph:

@@ -34,7 +34,7 @@ class EvolutionStoreIntegrityError(RuntimeError):
     """A durable evolution record is corrupt or semantically invalid."""
 
 
-_SCHEMA = "evolution-store.sqlite.v1"
+_SCHEMA = "evolution-store.sqlite.v2"
 
 
 def _default_connection(path: str | Path, *, timeout_seconds: float) -> sqlite3.Connection:
@@ -336,19 +336,27 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
                 conn.execute("CREATE TABLE IF NOT EXISTS evolution_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
                 conn.execute(
                     "CREATE TABLE IF NOT EXISTS evolution_observations ("
-                    "observation_id TEXT PRIMARY KEY, payload BLOB NOT NULL, payload_digest TEXT NOT NULL)"
+                    "sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    "observation_id TEXT UNIQUE NOT NULL, payload BLOB NOT NULL, "
+                    "payload_digest TEXT NOT NULL)"
                 )
                 conn.execute(
                     "CREATE TABLE IF NOT EXISTS evolution_discoveries ("
-                    "record_key TEXT PRIMARY KEY, payload BLOB NOT NULL, payload_digest TEXT NOT NULL)"
+                    "sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    "record_key TEXT UNIQUE NOT NULL, payload BLOB NOT NULL, "
+                    "payload_digest TEXT NOT NULL)"
                 )
                 conn.execute(
                     "CREATE TABLE IF NOT EXISTS evolution_proposals ("
-                    "proposal_id TEXT PRIMARY KEY, payload BLOB NOT NULL, payload_digest TEXT NOT NULL)"
+                    "sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    "proposal_id TEXT UNIQUE NOT NULL, payload BLOB NOT NULL, "
+                    "payload_digest TEXT NOT NULL)"
                 )
                 conn.execute(
                     "CREATE TABLE IF NOT EXISTS evolution_transitions ("
-                    "transition_id TEXT PRIMARY KEY, payload BLOB NOT NULL, payload_digest TEXT NOT NULL)"
+                    "sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    "transition_id TEXT UNIQUE NOT NULL, payload BLOB NOT NULL, "
+                    "payload_digest TEXT NOT NULL)"
                 )
                 current = conn.execute(
                     "SELECT value FROM evolution_meta WHERE key='schema_version'"
@@ -426,21 +434,21 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
     def observations(self) -> tuple[TopologyObservation, ...]:
         with self._connection() as conn:
             rows = conn.execute(
-                "SELECT payload FROM evolution_observations ORDER BY observation_id"
+                "SELECT payload FROM evolution_observations ORDER BY sequence"
             ).fetchall()
         return tuple(_decode_observation(bytes(row[0])) for row in rows)
 
     def proposals(self) -> tuple[EvolutionProposal, ...]:
         with self._connection() as conn:
             rows = conn.execute(
-                "SELECT payload FROM evolution_proposals ORDER BY proposal_id"
+                "SELECT payload FROM evolution_proposals ORDER BY sequence"
             ).fetchall()
         return tuple(_decode_proposal(bytes(row[0])) for row in rows)
 
     def transitions(self) -> tuple[EvolutionTransition, ...]:
         with self._connection() as conn:
             rows = conn.execute(
-                "SELECT payload FROM evolution_transitions ORDER BY transition_id"
+                "SELECT payload FROM evolution_transitions ORDER BY sequence"
             ).fetchall()
         return tuple(_decode_transition(bytes(row[0])) for row in rows)
 

@@ -63,6 +63,10 @@ class RegistryDrivenEvolutionController:
         if store is not None:
             self._observations.extend(store.observations())
         self._drifts: list[TopologyDrift] = []
+        for observation in tuple(self._observations):
+            drift = self._drift_for_observation(observation)
+            if drift is not None:
+                self._append_drift(drift)
         self._proposals: dict[str, EvolutionProposal] = {}
         self._stages: dict[str, EvolutionStage] = {}
         if store is not None:
@@ -146,50 +150,52 @@ class RegistryDrivenEvolutionController:
             self._store.append_discovery(report)
         return report
 
+    def _drift_for_observation(
+        self,
+        observation: TopologyObservation,
+    ) -> TopologyDrift | None:
+        try:
+            self._systems.validate(observation.system)
+        except (KeyError, RuntimeError):
+            return TopologyDrift(
+                kind=DriftKind.UNKNOWN_NODE,
+                system=observation.system,
+                expected_generation=self._systems.generation,
+                expected_digest=self._systems.topology_digest,
+                observed_generation=observation.topology_generation,
+                observed_digest=observation.topology_digest,
+                reason="runtime observation references an unregistered node",
+            )
+        if observation.topology_generation != self._systems.generation:
+            return TopologyDrift(
+                kind=DriftKind.STALE_GENERATION,
+                system=observation.system,
+                expected_generation=self._systems.generation,
+                expected_digest=self._systems.topology_digest,
+                observed_generation=observation.topology_generation,
+                observed_digest=observation.topology_digest,
+                reason="observation was emitted against an older topology generation",
+            )
+        if observation.topology_digest != self._systems.topology_digest:
+            return TopologyDrift(
+                kind=DriftKind.DIGEST_MISMATCH,
+                system=observation.system,
+                expected_generation=self._systems.generation,
+                expected_digest=self._systems.topology_digest,
+                observed_generation=observation.topology_generation,
+                observed_digest=observation.topology_digest,
+                reason="observation topology digest differs from the registry",
+            )
+        return None
+
     def observe(self, observation: TopologyObservation) -> None:
         """Record an observation and turn topology inconsistency into evidence."""
 
         if self._store is not None:
             self._store.append_observation(observation)
-        try:
-            self._systems.validate(observation.system)
-        except (KeyError, RuntimeError):
-            self._append_drift(
-                TopologyDrift(
-                    kind=DriftKind.UNKNOWN_NODE,
-                    system=observation.system,
-                    expected_generation=self._systems.generation,
-                    expected_digest=self._systems.topology_digest,
-                    observed_generation=observation.topology_generation,
-                    observed_digest=observation.topology_digest,
-                    reason="runtime observation references an unregistered node",
-                )
-            )
-        else:
-            if observation.topology_generation != self._systems.generation:
-                self._append_drift(
-                    TopologyDrift(
-                        kind=DriftKind.STALE_GENERATION,
-                        system=observation.system,
-                        expected_generation=self._systems.generation,
-                        expected_digest=self._systems.topology_digest,
-                        observed_generation=observation.topology_generation,
-                        observed_digest=observation.topology_digest,
-                        reason="observation was emitted against an older topology generation",
-                    )
-                )
-            elif observation.topology_digest != self._systems.topology_digest:
-                self._append_drift(
-                    TopologyDrift(
-                        kind=DriftKind.DIGEST_MISMATCH,
-                        system=observation.system,
-                        expected_generation=self._systems.generation,
-                        expected_digest=self._systems.topology_digest,
-                        observed_generation=observation.topology_generation,
-                        observed_digest=observation.topology_digest,
-                        reason="observation topology digest differs from the registry",
-                    )
-                )
+        drift = self._drift_for_observation(observation)
+        if drift is not None:
+            self._append_drift(drift)
         self._observations.append(observation)
 
     @contextmanager

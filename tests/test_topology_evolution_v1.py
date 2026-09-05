@@ -193,6 +193,25 @@ def test_sqlite_evolution_store_rehydrates_observations_and_proposals(tmp_path) 
     assert any(item.kind is SignalKind.FAILURE_CLUSTER for item in restored.assess().signals)
 
 
+def test_sqlite_evolution_store_rehydrates_topology_drifts(tmp_path) -> None:
+    from noetrium_platform.foundation.governance.evolution.providers import SQLiteEvolutionStore
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "drift.sqlite")
+    controller = RegistryDrivenEvolutionController(registry, store=store)
+    unknown = SystemIdentity("governance", ("not-registered",))
+    controller.observe(_observation(controller, unknown, ObservationOutcome.FAILURE, 0.1, 0))
+
+    restored = RegistryDrivenEvolutionController(
+        registry,
+        store=SQLiteEvolutionStore(tmp_path / "drift.sqlite"),
+    )
+
+    assessment = restored.assess()
+    assert any(item.kind is DriftKind.UNKNOWN_NODE for item in assessment.drifts)
+    assert any(item.kind is SignalKind.TOPOLOGY_DRIFT for item in assessment.signals)
+
+
 def test_sqlite_evolution_store_rejects_conflicting_immutable_records(tmp_path) -> None:
     from noetrium_platform.foundation.governance.evolution.providers import (
         EvolutionStoreConflict,

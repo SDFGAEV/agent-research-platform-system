@@ -7,9 +7,6 @@ from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject, JsonValue, canonical_digest, freeze_json
 
-from .memory_checkpoint import AgentMemoryCheckpoint
-
-
 class AgentLoopTerminationReason(StrEnum):
     COMPLETED = "completed"
     MAX_STEPS = "max_steps"
@@ -411,7 +408,7 @@ class AgentLoopCheckpoint:
     last_observation_digest: str
     action_summaries: tuple[AgentActionSummary, ...] = ()
     last_receipt: AgentReceiptCheckpoint | None = None
-    memory_checkpoint: AgentMemoryCheckpoint | None = None
+    memory_checkpoint: "AgentMemoryCheckpoint" | None = None
 
     def __post_init__(self) -> None:
         if self.schema_version != "agent-cognition-checkpoint.v2":
@@ -420,8 +417,11 @@ class AgentLoopCheckpoint:
             raise ValueError("agent cognition checkpoint identity is invalid")
         if min(self.step, self.plan_calls, self.no_progress_steps, self.same_action_runs) < 0:
             raise ValueError("agent cognition checkpoint counters cannot be negative")
-        if self.memory_checkpoint is not None and not isinstance(self.memory_checkpoint, AgentMemoryCheckpoint):
-            raise TypeError("agent cognition checkpoint memory state must be typed")
+        if self.memory_checkpoint is not None:
+            try:
+                self.memory_checkpoint.to_dict()
+            except AttributeError as exc:
+                raise TypeError("agent cognition checkpoint memory state must expose to_dict") from exc
         if bool(self.action_summaries) != (self.last_receipt is not None):
             raise ValueError("agent cognition checkpoint trajectory/receipt state is incomplete")
         if self.last_receipt is not None:

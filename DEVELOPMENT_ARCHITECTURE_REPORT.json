@@ -1,30 +1,30 @@
 {
   "architecture_budget_violations": [],
   "architecture_complexity": {
-    "authorities": 160,
-    "contract_declarations": 152,
-    "import_edges": 4890,
-    "subsystems": 142,
+    "authorities": 166,
+    "contract_declarations": 174,
+    "import_edges": 5020,
+    "subsystems": 148,
     "top_level_systems": 18
   },
   "architecture_complexity_budget": {
     "applicable_migration_ids": [],
     "baseline": {
       "complexity": {
-        "authorities": 160,
-        "contract_declarations": 152,
-        "import_edges": 4890,
-        "subsystems": 142,
+        "authorities": 166,
+        "contract_declarations": 174,
+        "import_edges": 5042,
+        "subsystems": 148,
         "top_level_systems": 18
       },
-      "git_sha": "b25a793eacd169abec3e9348544852dcbaab55f2",
-      "source_digest": "5ab7b477734069d7c17f93658952aebca71d2d04670054cd9ba6e8a7bccccae6"
+      "git_sha": "e7df9497859f0b02714b5fb3d24455e10b0fc3c6",
+      "source_digest": "e7f22278dd0cf7f797c16b583ef411a6fcee75cde18f19de7dd594166033f2ee"
     },
     "effective_limits": {
-      "authorities": 160,
-      "contract_declarations": 152,
-      "import_edges": 4890,
-      "subsystems": 142,
+      "authorities": 166,
+      "contract_declarations": 174,
+      "import_edges": 5042,
+      "subsystems": 148,
       "top_level_systems": 18
     },
     "migrations": [
@@ -620,14 +620,14 @@
     },
     {
       "kind": "event",
-      "line": 356,
+      "line": 365,
       "module": "components.reference.graph",
       "path": "components/reference/graph.py",
       "relation": "consumes",
       "seam_id": "completed"
     }
   ],
-  "import_edges": 4890,
+  "import_edges": 5020,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "02382f959998d0b9ed1a7ffa665d568338cfa914b8dec4fdb490b287b5730c66",
+  "report_sha256": "d578d08c27f84ce181e33ebc7cf235b392fbf611293c144f7b58c9f2b082930b",
   "source_authority_violations": [],
-  "source_digest": "13542e6e13a99a55d658ad2a1592e17708b5208179ffff0a1028e7449177437e",
+  "source_digest": "f377073f42bd319ced6fd9d77617e307544b05c94faf45f1be94aa3c582a77df",
   "source_invariant_violations": [],
   "source_root": "E:\\Agent-Research-Workspace\\projects\\active\\agent-research-platform-system",
   "subsystem_graph": [
@@ -1077,6 +1077,41 @@
     },
     {
       "authorities": [
+        "embodied_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.embodied",
+      "provides": [
+        "environment.embodied.contract"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment",
+        "reliability",
+        "resource"
+      ],
+      "source": "environment",
+      "target": "environment/embodied"
+    },
+    {
+      "authorities": [
+        "gui_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.gui",
+      "provides": [
+        "environment.gui.contract"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment",
+        "runtime"
+      ],
+      "source": "environment",
+      "target": "environment/gui"
+    },
+    {
+      "authorities": [
         "environment_instance"
       ],
       "components": [],
@@ -1133,23 +1168,6 @@
     },
     {
       "authorities": [
-        "python_environment"
-      ],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.python",
-      "provides": [
-        "python-environment.registry",
-        "python-environment.lifecycle",
-        "python-environment.execution",
-        "python-environment.packages"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/python"
-    },
-    {
-      "authorities": [
         "environment_resolution"
       ],
       "components": [],
@@ -1173,6 +1191,24 @@
       "requires": [],
       "source": "environment",
       "target": "environment/runtime"
+    },
+    {
+      "authorities": [
+        "software_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.software",
+      "provides": [
+        "environment.software.contract"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment",
+        "runtime",
+        "resource"
+      ],
+      "source": "environment",
+      "target": "environment/software"
     },
     {
       "authorities": [
@@ -1209,6 +1245,39 @@
       "requires": [],
       "source": "environment/specification",
       "target": "environment/specification/schema"
+    },
+    {
+      "authorities": [
+        "text_world_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.text_world",
+      "provides": [
+        "environment.text_world.contract"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment"
+      ],
+      "source": "environment",
+      "target": "environment/text_world"
+    },
+    {
+      "authorities": [
+        "web_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.web",
+      "provides": [
+        "environment.web.contract"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment",
+        "runtime"
+      ],
+      "source": "environment",
+      "target": "environment/web"
     },
     {
       "authorities": [
@@ -1481,6 +1550,23 @@
       "requires": [],
       "source": "governance",
       "target": "governance/concurrency"
+    },
+    {
+      "authorities": [
+        "system_evolution"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.foundation.governance.evolution",
+      "provides": [
+        "governance.evolution"
+      ],
+      "relation": "contains",
+      "requires": [
+        "governance/system_registry",
+        "observability"
+      ],
+      "source": "governance",
+      "target": "governance/evolution"
     },
     {
       "authorities": [
@@ -2149,7 +2235,9 @@
       "package_prefix": "noetrium_platform.product.operator.maintenance",
       "provides": [],
       "relation": "contains",
-      "requires": [],
+      "requires": [
+        "runtime"
+      ],
       "source": "operator",
       "target": "operator/maintenance"
     },
@@ -2553,6 +2641,26 @@
       "requires": [],
       "source": "runtime/process",
       "target": "runtime/process/supervision"
+    },
+    {
+      "authorities": [
+        "python_environment"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.infrastructure.lifecycle.python",
+      "provides": [
+        "python-environment.registry",
+        "python-environment.lifecycle",
+        "python-environment.execution",
+        "python-environment.packages"
+      ],
+      "relation": "contains",
+      "requires": [
+        "runtime",
+        "resource"
+      ],
+      "source": "runtime",
+      "target": "runtime/python"
     },
     {
       "authorities": [
@@ -3068,6 +3176,18 @@
   ],
   "top_hotspots": [
     {
+      "branches": 156,
+      "classes": 4,
+      "exception_handlers": 1,
+      "functions": 42,
+      "imports": 14,
+      "max_function_lines": 115,
+      "module": "noetrium_platform.research.experimentation.workbench.runtime.engine",
+      "path": "noetrium_platform/research/experimentation/workbench/runtime/engine.py",
+      "physical_lines": 899,
+      "score": 2329
+    },
+    {
       "branches": 96,
       "classes": 1,
       "exception_handlers": 26,
@@ -3116,6 +3236,30 @@
       "score": 1836
     },
     {
+      "branches": 124,
+      "classes": 32,
+      "exception_handlers": 1,
+      "functions": 37,
+      "imports": 6,
+      "max_function_lines": 46,
+      "module": "noetrium_platform.research.experimentation.workbench.api.contracts",
+      "path": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
+      "physical_lines": 815,
+      "score": 1835
+    },
+    {
+      "branches": 102,
+      "classes": 10,
+      "exception_handlers": 3,
+      "functions": 38,
+      "imports": 12,
+      "max_function_lines": 80,
+      "module": "noetrium_platform.research.experimentation.study.runtime.matrix",
+      "path": "noetrium_platform/research/experimentation/study/runtime/matrix.py",
+      "physical_lines": 852,
+      "score": 1794
+    },
+    {
       "branches": 81,
       "classes": 1,
       "exception_handlers": 15,
@@ -3138,6 +3282,18 @@
       "path": "noetrium_platform/research/experimentation/run/control/providers/directory_ledger.py",
       "physical_lines": 566,
       "score": 1543
+    },
+    {
+      "branches": 80,
+      "classes": 30,
+      "exception_handlers": 0,
+      "functions": 30,
+      "imports": 9,
+      "max_function_lines": 86,
+      "module": "noetrium_platform.research.experimentation.experiment.api.contracts",
+      "path": "noetrium_platform/research/experimentation/experiment/api/contracts.py",
+      "physical_lines": 768,
+      "score": 1507
     },
     {
       "branches": 69,
@@ -3248,70 +3404,22 @@
       "score": 1150
     },
     {
-      "branches": 67,
-      "classes": 1,
-      "exception_handlers": 7,
-      "functions": 16,
-      "imports": 10,
-      "max_function_lines": 51,
-      "module": "noetrium_platform.research.experimentation.run.control.runtime.controller",
-      "path": "noetrium_platform/research/experimentation/run/control/runtime/controller.py",
-      "physical_lines": 485,
-      "score": 1123
-    },
-    {
       "branches": 40,
       "classes": 9,
       "exception_handlers": 13,
-      "functions": 31,
+      "functions": 34,
       "imports": 11,
       "max_function_lines": 109,
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.branch_runtime",
       "path": "noetrium_platform/capabilities/environment/minecraft/composition/branch_runtime.py",
-      "physical_lines": 519,
-      "score": 1120
-    },
-    {
-      "branches": 67,
-      "classes": 10,
-      "exception_handlers": 1,
-      "functions": 34,
-      "imports": 8,
-      "max_function_lines": 82,
-      "module": "components.reference.graph",
-      "path": "components/reference/graph.py",
-      "physical_lines": 472,
-      "score": 1106
-    },
-    {
-      "branches": 27,
-      "classes": 1,
-      "exception_handlers": 4,
-      "functions": 7,
-      "imports": 15,
-      "max_function_lines": 231,
-      "module": "noetrium_platform.capabilities.participant.agent.runtime.cognition_loop",
-      "path": "noetrium_platform/capabilities/participant/agent/runtime/cognition_loop.py",
-      "physical_lines": 400,
-      "score": 1063
-    },
-    {
-      "branches": 49,
-      "classes": 3,
-      "exception_handlers": 13,
-      "functions": 32,
-      "imports": 11,
-      "max_function_lines": 47,
-      "module": "noetrium_platform.foundation.governance.providers.repository_source",
-      "path": "noetrium_platform/foundation/governance/providers/repository_source.py",
-      "physical_lines": 505,
-      "score": 1060
+      "physical_lines": 528,
+      "score": 1129
     }
   ],
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 322,
+      "import_fan_in": 344,
       "import_fan_out": 10,
       "io_sites": 0,
       "lock_sites": 0,
@@ -3322,7 +3430,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1318,
+      "risk_score": 1406,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -3518,6 +3626,25 @@
       "serialization_sites": 7
     },
     {
+      "exception_handlers": 8,
+      "import_fan_in": 1,
+      "import_fan_out": 11,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.capabilities.environment.minecraft.runtime.session",
+      "path": "noetrium_platform/capabilities/environment/minecraft/runtime/session.py",
+      "reason_codes": [
+        "HIGH_FAN_OUT",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 296,
+      "self_mutation_sites": 23,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 11,
       "import_fan_in": 2,
       "import_fan_out": 6,
@@ -3534,6 +3661,24 @@
       "risk_score": 295,
       "self_mutation_sites": 25,
       "serialization_sites": 2
+    },
+    {
+      "exception_handlers": 6,
+      "import_fan_in": 1,
+      "import_fan_out": 2,
+      "io_sites": 21,
+      "lock_sites": 1,
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
+      "path": "noetrium_platform/foundation/portfolio/runtime/catalog.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION"
+      ],
+      "risk_score": 293,
+      "self_mutation_sites": 11,
+      "serialization_sites": 0
     },
     {
       "exception_handlers": 5,
@@ -3553,6 +3698,25 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 14,
+      "import_fan_in": 1,
+      "import_fan_out": 4,
+      "io_sites": 0,
+      "lock_sites": 4,
+      "long_functions": 2,
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.openai_compatible",
+      "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/openai_compatible.py",
+      "reason_codes": [
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 288,
+      "self_mutation_sites": 12,
+      "serialization_sites": 3
+    },
+    {
       "exception_handlers": 1,
       "import_fan_in": 1,
       "import_fan_out": 3,
@@ -3567,25 +3731,6 @@
       ],
       "risk_score": 281,
       "self_mutation_sites": 44,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 8,
-      "import_fan_in": 1,
-      "import_fan_out": 11,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.capabilities.environment.minecraft.runtime.session",
-      "path": "noetrium_platform/capabilities/environment/minecraft/runtime/session.py",
-      "reason_codes": [
-        "HIGH_FAN_OUT",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 276,
-      "self_mutation_sites": 23,
       "serialization_sites": 0
     },
     {
@@ -3605,57 +3750,22 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 12,
+      "exception_handlers": 9,
       "import_fan_in": 1,
-      "import_fan_out": 4,
-      "io_sites": 0,
-      "lock_sites": 4,
-      "long_functions": 2,
-      "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.openai_compatible",
-      "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/openai_compatible.py",
+      "import_fan_out": 3,
+      "io_sites": 18,
+      "lock_sites": 0,
+      "long_functions": 1,
+      "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
+      "path": "noetrium_platform/foundation/governance/evolution/providers/sqlite_store.py",
       "reason_codes": [
-        "LOCK_CONTENTION_RISK",
-        "STATE_MUTATION_CONCENTRATION",
+        "IO_CONCENTRATION",
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 267,
-      "self_mutation_sites": 11,
-      "serialization_sites": 3
-    },
-    {
-      "exception_handlers": 0,
-      "import_fan_in": 63,
-      "import_fan_out": 2,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.kernel.concurrency.api",
-      "path": "noetrium_platform/foundation/kernel/concurrency/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 258,
-      "self_mutation_sites": 0,
+      "risk_score": 264,
+      "self_mutation_sites": 3,
       "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 7,
-      "import_fan_in": 2,
-      "import_fan_out": 6,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 2,
-      "module": "noetrium_platform.capabilities.environment.minecraft.providers.jsonl_bridge",
-      "path": "noetrium_platform/capabilities/environment/minecraft/providers/jsonl_bridge.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 246,
-      "self_mutation_sites": 24,
-      "serialization_sites": 1
     }
   ]
 }

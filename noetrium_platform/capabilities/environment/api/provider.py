@@ -20,7 +20,6 @@ class EnvironmentCapability(StrEnum):
     RAW_RECORDS = "raw_records"
     ARTIFACTS = "artifacts"
     TASKS = "tasks"
-    REPLAY = "replay"
 
 
 @dataclass(frozen=True, slots=True)

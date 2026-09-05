@@ -409,3 +409,29 @@ def test_operation_bridge_binds_observation_to_entry_topology() -> None:
     assessment = controller.assess()
     assert any(item.kind is SignalKind.TOPOLOGY_DRIFT for item in assessment.signals)
     assert assessment.drifts[0].kind is DriftKind.STALE_GENERATION
+
+
+def test_parallel_operation_observations_are_isolated(tmp_path) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+
+    from noetrium_platform.foundation.governance.evolution.providers import (
+        SQLiteEvolutionStore,
+    )
+
+    registry = build_default_system_registry()
+    store = SQLiteEvolutionStore(tmp_path / "parallel-observations.sqlite")
+    controller = RegistryDrivenEvolutionController(registry, store=store)
+    system = SystemIdentity("observability", ("logging",))
+
+    def run(index: int) -> None:
+        with controller.operation(system, f"parallel-{index}"):
+            pass
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        tuple(executor.map(run, range(32)))
+
+    observations = store.observations()
+    assert len(observations) == 32
+    assert {item.operation_id for item in observations} == {
+        f"parallel-{index}" for index in range(32)
+    }

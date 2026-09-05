@@ -138,6 +138,35 @@ class FileRawObservationPersistence:
             )
         return ()
 
+    def read(self, run_id: str, family: str, *, limit: int = 10000) -> tuple[JsonObject, ...]:
+        if limit <= 0:
+            return ()
+        target = RawSegmentPool.target(self.root, run_id, family)
+        actor = self._actor_for(run_id, family)
+
+        def read_owned() -> tuple[JsonObject, ...]:
+            if not target.exists():
+                return ()
+            schema_version = self._schema_version_for(target, run_id, family)
+            snapshot_size = target.stat().st_size
+            scan_raw_segment(
+                target,
+                family=family,
+                schema_version=schema_version,
+                run_id=run_id,
+                limit_bytes=snapshot_size,
+                repair_partial_tail=False,
+            )
+            rows: list[JsonObject] = []
+            with target.open("rb") as handle:
+                for raw in handle:
+                    if len(rows) >= limit:
+                        break
+                    rows.append(decode_record_json(raw))
+            return tuple(rows)
+
+        return actor.call("read", read_owned)
+
     @staticmethod
     def _schema_version_for(target: Path, run_id: str, family: str) -> str:
         if not target.exists():

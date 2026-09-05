@@ -20,6 +20,7 @@ def build_openai_compatible_qualified_endpoint(
     timeout_s: float | None = None,
     task_group: TaskGroupPort,
     admission_registry: ModelAdmissionRegistryPort,
+    observers: tuple[object, ...] = (),
 ) -> ModelEndpointPort:
     """Materialize one endpoint from a platform-qualified binding."""
 
@@ -42,6 +43,7 @@ def build_openai_compatible_qualified_endpoint(
         transport=AsyncioJsonTransport(headers=headers),
         task_group=task_group,
         admission=admission,
+        observers=observers,
     )
 
 

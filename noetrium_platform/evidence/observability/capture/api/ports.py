@@ -4,7 +4,11 @@ from typing import Mapping, Protocol
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject
 
-from .contracts import RawObservationReceipt, RawObservationSchema
+from .contracts import RawObservationEnvelope, RawObservationReceipt, RawObservationSchema
+
+
+class RawObservationSinkPort(Protocol):
+    def capture(self, envelope: RawObservationEnvelope) -> RawObservationReceipt: ...
 
 
 class RawObservationPersistencePort(Protocol):
@@ -20,7 +24,9 @@ class RawObservationPersistencePort(Protocol):
 
     def verify(self, run_id: str, family: str) -> tuple[str, ...]: ...
 
+    def read(self, run_id: str, family: str, *, limit: int = 10000) -> tuple[JsonObject, ...]: ...
+
     def close(self) -> None: ...
 
 
-__all__ = ["RawObservationPersistencePort"]
+__all__ = ["RawObservationPersistencePort", "RawObservationSinkPort"]

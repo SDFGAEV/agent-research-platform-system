@@ -27,6 +27,7 @@ def build_openai_compatible_runtime_canary_endpoint(
     api_key: str = "",
     timeout_s: float | None = None,
     transport: AsyncJsonHttpTransportPort | None = None,
+    observers: tuple[object, ...] = (),
 ) -> ModelEndpointPort:
     """Build a bounded endpoint for live canary execution before closure publication."""
     generation = deployment.digest()
@@ -64,6 +65,7 @@ def build_openai_compatible_runtime_canary_endpoint(
         transport=transport,
         task_group=task_group,
         admission=admission,
+        observers=observers,
     )
 
 

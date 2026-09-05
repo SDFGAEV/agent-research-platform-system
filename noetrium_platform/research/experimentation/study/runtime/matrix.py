@@ -455,10 +455,11 @@ class StaticUnitPlanner:
 
 
 class InMemoryObservationLedger(UniversalObservationSinkPort):
-    """Strict ordered observation and verbatim raw-record ledger."""
+    """Volatile observation view; production raw facts use an injected store."""
 
-    def __init__(self) -> None:
+    def __init__(self, raw_store: UniversalRawRecordStorePort | None = None) -> None:
         self._lock = RLock()
+        self._raw_store = raw_store
         self._observations: list[UniversalObservationEnvelope] = []
         self._last_sequence: dict[tuple[str, str], int] = {}
         self._raw_records: list[UniversalRawRecord] = []
@@ -479,6 +480,9 @@ class InMemoryObservationLedger(UniversalObservationSinkPort):
             return tuple(self._observations)
 
     def append_raw_record(self, record: UniversalRawRecord) -> None:
+        if self._raw_store is not None:
+            self._raw_store.append_raw_record(record)
+            return
         if type(record) is not UniversalRawRecord:
             raise TypeError("raw ledger accepts only RawRecord")
         with self._lock:
@@ -493,6 +497,8 @@ class InMemoryObservationLedger(UniversalObservationSinkPort):
             self._raw_records.append(record)
 
     def raw_snapshot(self) -> tuple[UniversalRawRecord, ...]:
+        if self._raw_store is not None:
+            return self._raw_store.raw_snapshot()
         with self._lock:
             return tuple(self._raw_records)
 

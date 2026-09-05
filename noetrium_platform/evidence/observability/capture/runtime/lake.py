@@ -70,6 +70,11 @@ class RawObservationLake:
     def verify(self, run_id: str, family: str) -> tuple[str, ...]:
         return self._persistence.verify(run_id, family)
 
+    def read(self, run_id: str, family: str, *, limit: int = 10000) -> tuple[JsonObject, ...]:
+        if limit <= 0:
+            return ()
+        return self._persistence.read(run_id, family, limit=limit)
+
     def close(self) -> None:
         self._persistence.close()
 

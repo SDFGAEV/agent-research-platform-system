@@ -161,7 +161,7 @@
     },
     {
       "id": "architecture",
-      "pattern": "^test_(?:algorithm_governance|concurrency_(?:architecture|governance)|architecture|authority|capability|composed|cross_subsystem|dataflow|harness|hierarchical_platform|leaf_(?:executable|public)|no_degradation|platform_(?:core|repository_boundary)|quality_architecture|registered_public|runtime_platform_architecture|test_system|vnext)",
+      "pattern": "^test_(?:algorithm_governance|concurrency_(?:architecture|governance)|architecture|authority|capability|composed|cross_subsystem|dataflow|harness|hierarchical_platform|leaf_(?:executable|public)|no_degradation|platform_(?:core|repository_boundary)|quality_architecture|registered_public|registry_bound_raw_capture|runtime_platform_architecture|test_system|vnext)",
       "family": "static-architecture"
     },
     {

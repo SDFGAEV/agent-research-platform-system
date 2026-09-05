@@ -19,6 +19,8 @@ from noetrium_platform.evidence.observability.logging.record.runtime import (
     SystemObservationFactory,
 )
 from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPort
+from noetrium_platform.evidence.observability.logging.composition.raw_sink import RegistryBoundRawLogSink
+from noetrium_platform.evidence.observability.capture.runtime import RegistryBoundRawObservationGateway
 from noetrium_platform.evidence.observability.api import ContextMetricSink
 from noetrium_platform.foundation.governance.architecture.api.capabilities import (
     EXCEPTION_DESCRIPTOR_V1,
@@ -88,6 +90,7 @@ def compose_logging_system(
     exception_descriptor: ExceptionDescriptorBinding | None = None,
     parent_plan_digest: str | None = None,
     metrics: ContextMetricSink | None = None,
+    raw_gateway: RegistryBoundRawObservationGateway | None = None,
 ) -> LoggingSystemBinding:
     """Compose logging without a container or a hidden default runtime dependency.
 
@@ -186,8 +189,9 @@ def compose_logging_system(
             ),
         ),
     )
+    logging_sink = sink.sink if raw_gateway is None else RegistryBoundRawLogSink(sink.sink, raw_gateway)
     logging_system = StructuredLoggingSystem(
-        sink.sink,
+        logging_sink,
         query.query,
         systems=systems,
         exception_descriptor=descriptor_binding.descriptor,
@@ -209,4 +213,5 @@ __all__ = [
     "LogQueryBinding",
     "LogSinkBinding",
     "compose_logging_system",
+    "RegistryBoundRawLogSink",
 ]

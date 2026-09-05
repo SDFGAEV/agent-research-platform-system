@@ -67,52 +67,52 @@
     },
     {
       "path": "README.de.md",
-      "sha256": "4a15a1517de1843e9064fd1496f1fe008b217e058b291f8e07049f1ac140a292",
+      "sha256": "073bf547cf24eceb39070af33cf023413ecc71cf8eacc768f5446af6f7f7d827",
       "size": 16102
     },
     {
       "path": "README.es.md",
-      "sha256": "94178e402c4d4cc0186d6b6e7b2fbf96ac4af651a715ed148601403a7319cf8f",
+      "sha256": "fee3500b91834f0143ddf8ef74d580fa5b9fe8bbce72ead828b35557274a24c5",
       "size": 16059
     },
     {
       "path": "README.fr.md",
-      "sha256": "e1b4a9054bf61b10976ae3442f83ca2455f12a9b16c9e0e7a802b33a6cffc9d6",
+      "sha256": "89a0dfe0a090c23148c83b6e6993240c0d2df55169ae4a48a82314e17217b4f1",
       "size": 16461
     },
     {
       "path": "README.ja.md",
-      "sha256": "b56225c0233c665836684ada2d31fef9052fc1a74889068b65457ebdb0aa744d",
+      "sha256": "8053eb26bcf733b6ae246d0afb89beb56f81baf83a06d03e035e7b339982e1b1",
       "size": 16743
     },
     {
       "path": "README.ko.md",
-      "sha256": "757843ed4ff3371265495d0d03d763eb76a9363aed85bf24a9ff8bd6f7b1d890",
+      "sha256": "6dbd1ec06e0722a7810b5f672fa2303eec4987c56c1f3d3c4eb0c4dbeb326a66",
       "size": 16014
     },
     {
       "path": "README.md",
-      "sha256": "5cc517b154c158e786ed3ae55067a96a8ab166d282cdf2e55648ee9af048d421",
-      "size": 19554
+      "sha256": "0663089f103e08709de19ea99f5e5a405ee8fa717e85b7190d186dfcac035d93",
+      "size": 19518
     },
     {
       "path": "README.pt-BR.md",
-      "sha256": "8f2531021ab08a9f16e536cd6a74a32c4f74121707b71f3a63c3019670d6e3fa",
+      "sha256": "eea53e09e9bea618c580d38e5b78c72ca3443112a5d3b3069e190896b093eead",
       "size": 15925
     },
     {
       "path": "README.ru.md",
-      "sha256": "9b765efef3f9538d5032881fd249c0f40681bcdd888cd12e323104a5d313e5c9",
+      "sha256": "639759600669a9d480d1932c6ef1650c526d423a6e4d49c34a0e16d03af45a6e",
       "size": 20384
     },
     {
       "path": "README.zh-CN.md",
-      "sha256": "314bb5035e23e60727d6529e129c174e3ec6a473a8887d56c72fee59a30f8ad1",
-      "size": 18388
+      "sha256": "330d730aa172730d440d0750625a15ec2511029fed85bb95f56359c6d57c0ac3",
+      "size": 18352
     },
     {
       "path": "README.zh-TW.md",
-      "sha256": "9733f03fd24f9bac2006ba1b0f6867c6b4a753a26b62602d2778b331166684b7",
+      "sha256": "b0661c5e5049a30a09002f79b7cfffa35ec098e29744e281e20b3b7e7a912664",
       "size": 14494
     },
     {
@@ -132,8 +132,8 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "1e24004c0b00f104cda52f39f2cdbed040f14de9602af0504155e9ba139976db",
-      "size": 2433
+      "sha256": "7b8483a457ad9bfc16292a1e0fa67d76ae3a83b1767444b05b7ff602b1ccce7b",
+      "size": 2466
     },
     {
       "path": "tests_support.py",
@@ -164,6 +164,91 @@
       "path": ".github/workflows/ci.yml",
       "sha256": "e961eec72d31f21bc053dbfd916e222b8dc478bdfcbf95485c2a6e62f490b7b0",
       "size": 6971
+    },
+    {
+      "path": "components/__init__.py",
+      "sha256": "90076114b52d770788e6f20fb8ccc1af90436d8b673169e2384ef61ce0625be1",
+      "size": 155
+    },
+    {
+      "path": "components/reference/__init__.py",
+      "sha256": "40f2de062c586abf82b42f7fd33eb4e4bcf8a5152439b0716090f8fec197f2d0",
+      "size": 234
+    },
+    {
+      "path": "components/reference/graph.py",
+      "sha256": "cad93dfc87490193222b04be40c5607efda412bd0a12757e932b4a306c843373",
+      "size": 20443
+    },
+    {
+      "path": "components/reference/bridges/__init__.py",
+      "sha256": "2184c3c416c2f6382e8a73e3a23a50810554e011791de37fe0e3250ae8699601",
+      "size": 884
+    },
+    {
+      "path": "components/reference/bridges/frameworks.py",
+      "sha256": "1bab9bd4004e8426cec042f06b010921cbca86e6377560782c0c294526d20e18",
+      "size": 9146
+    },
+    {
+      "path": "components/reference/bridges/model.py",
+      "sha256": "69d00422efb81682355527bc68406d432335e9a627131bb898cddb416c67f6ea",
+      "size": 2225
+    },
+    {
+      "path": "components/reference/single_agent/__init__.py",
+      "sha256": "ff77994026606721ebc28ddc00fbb6a16c2f17628d4fd7195ee73a4d515ad41a",
+      "size": 183
+    },
+    {
+      "path": "components/reference/single_agent/agent/__init__.py",
+      "sha256": "da25daefb9b152c325671b777a28ca29fa9910a63c75d9bc6ec85530d851e5a5",
+      "size": 1388
+    },
+    {
+      "path": "components/reference/single_agent/agent/contracts.py",
+      "sha256": "e0cd555ad77de2db5b3020fcb56bee61296aa1bf059c8e1ec47c65c0f37ca0f3",
+      "size": 10677
+    },
+    {
+      "path": "components/reference/single_agent/agent/methods.py",
+      "sha256": "2dea30ebde7ef6a478594c0d77a1a73fd9ad0b0b97db510bf7166f51a3bbb796",
+      "size": 15004
+    },
+    {
+      "path": "components/reference/single_agent/agent/runtime.py",
+      "sha256": "edae053adf5cbc2717697ab26fd34599f5cf0be84b4045358995e66b82e33692",
+      "size": 9472
+    },
+    {
+      "path": "components/reference/single_agent/agent/tool_adapter.py",
+      "sha256": "f0302e0aaef49ddaa3a6eb25c03b3d433b09b8b5364d4fff977bf6d9a33dfb82",
+      "size": 1442
+    },
+    {
+      "path": "components/reference/single_agent/memory/__init__.py",
+      "sha256": "ed791e2feea1c4c14b938fd854e976f22919c71fe445ba0482d3250049c6c421",
+      "size": 395
+    },
+    {
+      "path": "components/reference/single_agent/memory/persistence.py",
+      "sha256": "07fd6b48f36f0f56ed5effa16abbf398a536a1b533c5112e7a51128a2fc737da",
+      "size": 6030
+    },
+    {
+      "path": "components/reference/single_agent/memory/stores.py",
+      "sha256": "6334416d70a5c6c637e45fa8457fac2ca0dbc7c8c2557390375f84d040f22797",
+      "size": 11200
+    },
+    {
+      "path": "components/reference/single_agent/tools/__init__.py",
+      "sha256": "19aaf60e015b85e373fa5be3964163c549d333caf6fc3a00aa08a87ca29c7f2c",
+      "size": 415
+    },
+    {
+      "path": "components/reference/single_agent/tools/registry.py",
+      "sha256": "d9aba01ce3d9b98bf1de69593c72b62a1915d5327a939ec826a7877efd02c691",
+      "size": 9655
     },
     {
       "path": "configs/model_deployment.example.json",
@@ -247,8 +332,8 @@
     },
     {
       "path": "docs/architecture/COMPONENT_LAYERS.md",
-      "sha256": "7dd8a9ce32974e1e4997c1ae6ac9af4182a4baac941e1f6c2096f553ac495f8c",
-      "size": 2388
+      "sha256": "b105972fc869141ff7b666f2e52ee5d4ad21b456ae03d20b1d7da4f52da526e7",
+      "size": 2844
     },
     {
       "path": "docs/architecture/COMPOSITION_GRAPH_AND_EVENT_SPINE_DESIGN.md",
@@ -262,8 +347,8 @@
     },
     {
       "path": "docs/architecture/DIRECTORY_ARCHITECTURE_V2.md",
-      "sha256": "259e8cc4379f2352b4314132209450227657062fe2de24509b737ba90f1acb7e",
-      "size": 2535
+      "sha256": "9bfd582a03a3798162d5ca580785a64401e485d8a012a542f0cd0f2ef268f68f",
+      "size": 3146
     },
     {
       "path": "docs/architecture/DOWNSTREAM_PROJECT_REPOSITORY_CONTRACT.md",
@@ -337,8 +422,8 @@
     },
     {
       "path": "docs/architecture/VNEXT_SYSTEM_CATALOG.json",
-      "sha256": "44d6e83b1a982bb4f4b036bde205bf337e57fa131750996efec40eeec51c7f77",
-      "size": 74292
+      "sha256": "7272818d083ee7e77e13ca9ce6d4d2f4921d06fc1a5f30e68733a7177b906dc0",
+      "size": 76062
     },
     {
       "path": "docs/development/SINGLE_MAINLINE_WORKFLOW.md",
@@ -676,6 +761,11 @@
       "size": 4604
     },
     {
+      "path": "docs/infrastructure/ai/AGENT_METHOD_COVERAGE_AUDIT.md",
+      "sha256": "12ccbe6e9d052a51c646bffaf3dc43714d7222e9bbb7c493d821a93b5198bebe",
+      "size": 24424
+    },
+    {
       "path": "docs/infrastructure/ai/AI_INFRASTRUCTURE_SYSTEM.md",
       "sha256": "507f47491752b61a844042e5169ae5db49084b4eb9666a99e64e0a518781285a",
       "size": 3896
@@ -1002,7 +1092,7 @@
     },
     {
       "path": "docs/readme/TRANSLATION_STATE.json",
-      "sha256": "d08b78aeeff3a20883b56a0896cc3606835ba434f22b95dfc5ae84bc7896ec86",
+      "sha256": "e24a65b910eeaced9edbe89fe7913f214940d56c78f52518e88de09f4d2c9658",
       "size": 1664
     },
     {
@@ -1012,8 +1102,8 @@
     },
     {
       "path": "docs/status/CURRENT_DEVELOPMENT_BASELINE.md",
-      "sha256": "4601e810dbaa27e65c29d6c1b55383a5248867eaf5a7dc8acba894f4cc88f8b2",
-      "size": 5143
+      "sha256": "5a25167e9d933c0348f2437abbf675af161e5c70990c8d4c3ddf500bae686aed",
+      "size": 5764
     },
     {
       "path": "docs/status/README.md",
@@ -1047,13 +1137,18 @@
     },
     {
       "path": "examples/README.md",
-      "sha256": "b8e5361b505c3d45a5cb41e94313d8109aa4dd13153a7d4c7b4aa9ba3dbd3337",
-      "size": 1144
+      "sha256": "fe567a1d8730249d9b4448f921c9fb1ea9d4218e675e450c3004e08034703f16",
+      "size": 2504
     },
     {
       "path": "examples/quickstart_agent_components.py",
-      "sha256": "4587c6657b209445ed5a5c4bb7d6a2f114d1034f06e5ba07132fe4f8d42ed90c",
+      "sha256": "a1b2adc644917fb814ab75b704864e9d676953e6c4d075ab2bff356c36c5a8b5",
       "size": 1467
+    },
+    {
+      "path": "examples/quickstart_durable_memory.py",
+      "sha256": "2452bdb59e892cd689c7078662348c898afdf06b58392d05675db153edf8bd0f",
+      "size": 889
     },
     {
       "path": "examples/quickstart_experiment_plan.py",
@@ -1061,9 +1156,24 @@
       "size": 2242
     },
     {
+      "path": "examples/quickstart_graph_interrupt.py",
+      "sha256": "cc2a2e9c314c096bba076c0c6fc50b93c5de23b594c8262f2a25990f950a47c9",
+      "size": 1227
+    },
+    {
+      "path": "examples/quickstart_langgraph_bridge.py",
+      "sha256": "627ae0b1d2e24f419942f0b38859c24656aa36e11564adf712f4701f685028b7",
+      "size": 810
+    },
+    {
+      "path": "examples/quickstart_multi_agent_transport.py",
+      "sha256": "82b00af06464972c09f80039b7a1f487dc8e13eb8af210052518c6d458e0a843",
+      "size": 1107
+    },
+    {
       "path": "noetrium/__init__.py",
-      "sha256": "f2bdc88050c5a44563c028bec07a5fe80cd337e99f92a0d51eb07556ceea80a9",
-      "size": 454
+      "sha256": "e649cd0e6e6b4a06541fe8a43de7354034186b5cd87805d0ee1986cae304b9ff",
+      "size": 445
     },
     {
       "path": "noetrium/platform.py",
@@ -1071,79 +1181,9 @@
       "size": 645
     },
     {
-      "path": "noetrium/adapters/__init__.py",
-      "sha256": "0f0a01e376688866a114bfcf21cebb104695331870b8f75f78deebfdafe68ccc",
-      "size": 98
-    },
-    {
-      "path": "noetrium/adapters/bridges/__init__.py",
-      "sha256": "c49b6157b221bfe7562f85e008dc245eb0cd462272198e45597bce587b67228e",
-      "size": 335
-    },
-    {
-      "path": "noetrium/adapters/bridges/adapters.py",
-      "sha256": "8db6d4456d02ed81f195f4ae37e7d345a3401dd4fd603a09eb76fb8258a4fec0",
-      "size": 2255
-    },
-    {
-      "path": "noetrium/components/__init__.py",
-      "sha256": "d714e5ff92349d1ac8b738bd82ed4410041d3e8f57edf1e5b408314d1c507aa1",
-      "size": 125
-    },
-    {
-      "path": "noetrium/components/reference/__init__.py",
-      "sha256": "54b449c16a8dff18a8e0420f7bb451e461d3cf0d7aa94191a77a6369ebbe7fcb",
-      "size": 135
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/__init__.py",
-      "sha256": "34899daf1a3c7f5a8c10d3ee0f7ef56ac19bd21b0beb74762e0af1e3ebe8408b",
-      "size": 149
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/agent/__init__.py",
-      "sha256": "74e6efc9833058879659b01ad45318a7d552ada4eb65f91867e963f553d36f0a",
-      "size": 1007
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/agent/contracts.py",
-      "sha256": "dd18cd471cec1d87934911f12de8728515ef71d9f3acbbfdf592d4c171bd5d2c",
-      "size": 6518
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/agent/methods.py",
-      "sha256": "34cb88d4280e0762206296cecb1ca8b97bacbaaaddf9da73c7701aed41136b00",
-      "size": 4584
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/agent/tool_adapter.py",
-      "sha256": "31bfb4b2abcd9ad510b40ab0f32b36fca4a41a1cd15398f724065943c32c3def",
-      "size": 933
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/memory/__init__.py",
-      "sha256": "66cc94c7636027dfbd752a90540ec95608e0a74d8b311952eecfd6bee7fd5692",
-      "size": 263
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/memory/stores.py",
-      "sha256": "e82cb8d6a20536e6bc3a401bde57218be490f967103cb41760d9ddf18890d4f1",
-      "size": 8966
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/tools/__init__.py",
-      "sha256": "19aaf60e015b85e373fa5be3964163c549d333caf6fc3a00aa08a87ca29c7f2c",
-      "size": 415
-    },
-    {
-      "path": "noetrium/components/reference/single_agent/tools/registry.py",
-      "sha256": "d9aba01ce3d9b98bf1de69593c72b62a1915d5327a939ec826a7877efd02c691",
-      "size": 9655
-    },
-    {
       "path": "noetrium/contracts/__init__.py",
-      "sha256": "117ee8efe0e880a71d8e7c5b327c6e8e93d0737e093d4acb4da8ecc28ad5c664",
-      "size": 7937
+      "sha256": "2e0040f92839049610fa653de5662e4e203d3bcb02721521d9c2448c9947fd1f",
+      "size": 10675
     },
     {
       "path": "noetrium/contracts/agent.py",
@@ -1177,28 +1217,8 @@
     },
     {
       "path": "noetrium/contracts/research.py",
-      "sha256": "3a8ddb4700964256dc0d8bb96f69beb61982688e1f10175eb03182ff5bd970ff",
-      "size": 2395
-    },
-    {
-      "path": "noetrium/orchestration/__init__.py",
-      "sha256": "586202f376f8d0dbb3715babb0aca7bc95615235f6921d683882985d1347c92d",
-      "size": 260
-    },
-    {
-      "path": "noetrium/orchestration/multi_agent/__init__.py",
-      "sha256": "3368caa4fd141a7ec4aa130341c7271dc8f6c776a7b495b9eb37f02c6fefa7ee",
-      "size": 899
-    },
-    {
-      "path": "noetrium/orchestration/multi_agent/contracts.py",
-      "sha256": "bab6b25b701c7a31071af8a9ff2fbafcf9b5ee65d1dca5cc0e89d3482502b50b",
-      "size": 12811
-    },
-    {
-      "path": "noetrium/orchestration/multi_agent/orchestration.py",
-      "sha256": "337c5642cb5ed51c70f01d2b9cdbf1231d0eb60efd7638bb0919eb831c794294",
-      "size": 14667
+      "sha256": "92f20cd2313ee976b244c795e1f5096a20aca627fe20bcf10c0e927621787701",
+      "size": 5392
     },
     {
       "path": "noetrium_platform/__init__.py",
@@ -1217,8 +1237,8 @@
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/__init__.py",
-      "sha256": "1a7c41ff9e4ebda84498c224640035a8c0e254a5acf69f345bd44fcbc7cb039c",
-      "size": 3017
+      "sha256": "446acb656bea935bd1f4508d9bd5bd53ac41b55f3d1d387d157c198ddba967d1",
+      "size": 3396
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/action_identity.py",
@@ -1237,8 +1257,8 @@
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/contracts.py",
-      "sha256": "6caae5d95ff71e984b74ac9725b05df779c4d005c6c67e5c4c71b93c571bc70a",
-      "size": 3896
+      "sha256": "a24599d3eb375065692488346020543cca5e81dc6575e25269eb5c48c7a179d3",
+      "size": 3331
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/errors.py",
@@ -1247,8 +1267,8 @@
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/ports.py",
-      "sha256": "d831a7f0f83d1951f930c5eaff99e752ae3471b1502d65c14663915822668155",
-      "size": 216
+      "sha256": "28a03c65002db831d8a17c6d527040fd037dddb5b476ce95cd44b0e4434792e2",
+      "size": 86
     },
     {
       "path": "noetrium_platform/capabilities/environment/api/provider.py",
@@ -1957,8 +1977,8 @@
     },
     {
       "path": "noetrium_platform/capabilities/environment/runtime/service.py",
-      "sha256": "17f6728476fd1efb3a94df9976f864d15a61015d18bca2ceff84becba0b869f3",
-      "size": 353
+      "sha256": "6e07d67d16f5fe66824a4663c0ee746aeea34ea5521e06d7dc5a582fdc585bf6",
+      "size": 69
     },
     {
       "path": "noetrium_platform/capabilities/environment/runtime/api/__init__.py",
@@ -3317,8 +3337,8 @@
     },
     {
       "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/openai_compatible.py",
-      "sha256": "2081784e59a8851e7a067a9507fda9774ab445fa566791051eaf3f0ad0c00a20",
-      "size": 14353
+      "sha256": "65b4fffa516c3dae6814d5cc3958f7dabec47eecdc2a0517d9b907fc3ce11722",
+      "size": 14361
     },
     {
       "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/qualified_binding.py",
@@ -4082,8 +4102,8 @@
     },
     {
       "path": "noetrium_platform/composition/platform_meta.py",
-      "sha256": "50082f2461048b93f41b604f01bcb73bc31fa6eedb95056b2fa9faffbe2fbdff",
-      "size": 5897
+      "sha256": "71e2b81f2948fc10ac2fec75e920ac886435d1cc2edc1580bd8db08fb4dfe27b",
+      "size": 6680
     },
     {
       "path": "noetrium_platform/composition/prompt_registry.py",
@@ -4227,13 +4247,13 @@
     },
     {
       "path": "noetrium_platform/evidence/artifact/api/contracts.py",
-      "sha256": "d868446c0c29e87f231aab745689025b45cc786ff589ee8e61866fb9873a910a",
-      "size": 1447
+      "sha256": "c2e451dff8e0e8650cfedaf31fee29ee94b5f7e9dfc5179c78a0a7fbb773742f",
+      "size": 903
     },
     {
       "path": "noetrium_platform/evidence/artifact/api/ports.py",
-      "sha256": "d831a7f0f83d1951f930c5eaff99e752ae3471b1502d65c14663915822668155",
-      "size": 216
+      "sha256": "28a03c65002db831d8a17c6d527040fd037dddb5b476ce95cd44b0e4434792e2",
+      "size": 86
     },
     {
       "path": "noetrium_platform/evidence/artifact/catalog/__init__.py",
@@ -4617,8 +4637,8 @@
     },
     {
       "path": "noetrium_platform/evidence/artifact/runtime/service.py",
-      "sha256": "17f6728476fd1efb3a94df9976f864d15a61015d18bca2ceff84becba0b869f3",
-      "size": 353
+      "sha256": "6e07d67d16f5fe66824a4663c0ee746aeea34ea5521e06d7dc5a582fdc585bf6",
+      "size": 69
     },
     {
       "path": "noetrium_platform/evidence/data/__init__.py",
@@ -5387,8 +5407,8 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/composition/__init__.py",
-      "sha256": "be860e4889b1756debe05bc8af14256f6bf4ee19b70bdfcc85d301720699f819",
-      "size": 7099
+      "sha256": "89f4d28fd4de0c4b2c64177e0a8b3c3aeac81953458652d7d03c9b444afca430",
+      "size": 7569
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/context/__init__.py",
@@ -5517,13 +5537,13 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/api/__init__.py",
-      "sha256": "c3799cb2afadbe0fca28fb66411759c71cb5c46bbf763daad4e62f3eb1d6178d",
-      "size": 341
+      "sha256": "35a7f52ba50d617bdac21e310c6d2958e22d8c31963374a86e152d5ec8b5ee13",
+      "size": 474
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/api/binding.py",
-      "sha256": "98e8739011cf8f737679f476fe68eda742a98eca6f8e2a72f772a69f51e36c78",
-      "size": 503
+      "sha256": "c81b9e5c6736168a842a2cc34cbcb4d623bb3e118537b244131962cb62cf3242",
+      "size": 581
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/api/boundary.py",
@@ -5537,8 +5557,8 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/api/ports.py",
-      "sha256": "4771e17d7aeab3d34e12a173c0f7846a8aac947472e66e76c128271e83c0a818",
-      "size": 3119
+      "sha256": "929347110cd16b16006da84992a7ce918e5539e31dc605e0d2a416bd9b070386",
+      "size": 3800
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/composition/__init__.py",
@@ -5557,8 +5577,8 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/runtime/__init__.py",
-      "sha256": "88bc1f2283efb4499eab07463b0d318a3ac651bc5f02ebd64d8f657fe8041c18",
-      "size": 140
+      "sha256": "c32191dec48d6a6ce484c9e93475adf89472fd826ccf92a4f895384019e6b68f",
+      "size": 340
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/runtime/logger.py",
@@ -5567,8 +5587,8 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/record/runtime/system.py",
-      "sha256": "00b344696ec8946dd18a6b1df93ac472ab939cbca42caa08545bf70792eb3595",
-      "size": 2298
+      "sha256": "7e5127b65cddf69ebc587784091cb58cd453aed5354453aec10b9fc35881a928",
+      "size": 8911
     },
     {
       "path": "noetrium_platform/evidence/observability/logging/retention/__init__.py",
@@ -6207,8 +6227,8 @@
     },
     {
       "path": "noetrium_platform/evidence/observability/telemetry/metric/runtime/registry.py",
-      "sha256": "3e528554a9701a326f71203489539cc1272265269dbcbe1b891bb397c6c45716",
-      "size": 1997
+      "sha256": "181147c17834c252e1962e87d38633e4038c82158a22f726389e0c07df7ba19e",
+      "size": 2088
     },
     {
       "path": "noetrium_platform/evidence/observability/telemetry/metric/runtime/store.py",
@@ -6512,7 +6532,7 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/ARCHITECTURE_BUDGET.json",
-      "sha256": "0e2407ae1210499166418311a1d395ccc818033f9b1f71628454191881776f69",
+      "sha256": "e983d5861858305cce2fc50c8af27e7564716547ec5874db400fb1c2d9b67e93",
       "size": 22135
     },
     {
@@ -6527,8 +6547,8 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/budget.py",
-      "sha256": "58555b84220af6c0bab64484b39111ff2100417c4b882db64584f7fb577bdb21",
-      "size": 35704
+      "sha256": "37f9d1c6d5a729b7e43a5cf2111c55914780ec1d0abf2c6fa790d53ccef8d8f4",
+      "size": 36637
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/capability_composition_invariants.py",
@@ -6632,8 +6652,8 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/import_graph.py",
-      "sha256": "72e3ba3288100eeb3daab69fed2b628822ba3a44cb74cb9cd12b7fd99dbe3dad",
-      "size": 16999
+      "sha256": "fa78ddfb7b128282f8ead37e90b5ca3c92a7b03e4c51d08325d41e04f7fe1690",
+      "size": 18139
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/model_dependency_invariants.py",
@@ -6757,8 +6777,8 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/report.py",
-      "sha256": "d02cb8bc873c021a1c9971f450a16b1427253d7dc3dd938b6a2d06c3ada60216",
-      "size": 9868
+      "sha256": "214790849b657110a100528a6dc4f76254c31e7e058058d816f71e70b6289528",
+      "size": 9998
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/runtime_control_invariants.py",
@@ -6877,8 +6897,8 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/source_profile.py",
-      "sha256": "0b52a5f263fc7ef1a38da19121bdad65cf15da3a5fe7689b068392d0a5e7d645",
-      "size": 14258
+      "sha256": "10604b3e8bb501304fdace90b0ca18df09e714c62e89fceb309e1c4cd8481b3f",
+      "size": 12605
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/source_scan.py",
@@ -6957,8 +6977,8 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/composition/report.py",
-      "sha256": "c18fabbf49832c609e0de2ebc6dcd1ee1b6cbe2289cc8f1455458b6b64c011a7",
-      "size": 2091
+      "sha256": "18f011dd524f6520ba353512c5b38f1262946d7041f4895a52ccdcb3eb1e730e",
+      "size": 2313
     },
     {
       "path": "noetrium_platform/foundation/governance/architecture/providers/__init__.py",
@@ -7074,6 +7094,51 @@
       "path": "noetrium_platform/foundation/governance/concurrency/runtime/text_analyzers.py",
       "sha256": "de7bd2d8bcaa01248f1f624ac7ea6e0e09fc25f23e07524687bf290a043ed3ee",
       "size": 2964
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/__init__.py",
+      "sha256": "83ee4d624821ceac42733695fa58b28ea59c6f1335558648a9a34d0f418604be",
+      "size": 678
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/api/__init__.py",
+      "sha256": "6b75db34977fbc5d64967df49a202fe6e69d609116e818d853bb9d351d567251",
+      "size": 658
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/api/contracts.py",
+      "sha256": "7ca2eeacfe8bbc0024927d13983c7945fa40c6d307f6f2d83943740ed153e888",
+      "size": 9759
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/api/ports.py",
+      "sha256": "f517e8356be825ece56606e0d5f84ad89df3b2f5f326a98f89280f9cce1ef1be",
+      "size": 2568
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/composition/__init__.py",
+      "sha256": "f98c940a94d0b56de98b341ac3cace2d676208e0af9716ccfe17b1ea72957b61",
+      "size": 83
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/providers/__init__.py",
+      "sha256": "cdbf64304c1fb0d40fe8e905a4afedecad9dd2941e4ea107c6131387d09a022a",
+      "size": 227
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/providers/sqlite_store.py",
+      "sha256": "025461b1ffdc14e3af8b0bb1dea8d3b2755fdadb7f3c45976660c136c491bbc1",
+      "size": 19534
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/runtime/__init__.py",
+      "sha256": "374751531dd1a5532eced618ea757df6097d59b4ff792c989cca5cdffb34f52b",
+      "size": 107
+    },
+    {
+      "path": "noetrium_platform/foundation/governance/evolution/runtime/controller.py",
+      "sha256": "42cd6e238308be6c7e42a3cb81573ab2e92652a34da5ab9f40662e205d2e836e",
+      "size": 19345
     },
     {
       "path": "noetrium_platform/foundation/governance/gate/__init__.py",
@@ -7547,13 +7612,13 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/catalog.json",
-      "sha256": "44d6e83b1a982bb4f4b036bde205bf337e57fa131750996efec40eeec51c7f77",
-      "size": 74292
+      "sha256": "7272818d083ee7e77e13ca9ce6d4d2f4921d06fc1a5f30e68733a7177b906dc0",
+      "size": 76062
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/api/__init__.py",
-      "sha256": "fdefbdb5973bf87fb165712de26a29b109c7796299b64572b11c08692917b958",
-      "size": 358
+      "sha256": "2da84c0b2ecef277f19bdc443b992acbbedd5707642d893365880f0006d444a2",
+      "size": 601
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/api/boundary.py",
@@ -7562,18 +7627,18 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/api/contracts.py",
-      "sha256": "4851b155de7298b9797d19f3db2adc68a0de36d50b868239806449608f719830",
-      "size": 3173
+      "sha256": "ac5d9761690fa0916fb53255799a06c3f1ccaa186a402792847c5c7dbc5c8704",
+      "size": 4874
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/api/ports.py",
-      "sha256": "8fcbaaed106611db5521e75c3f45168ef69b8021aba199d95f293b5d5176d7db",
-      "size": 577
+      "sha256": "92f40a690ea2182d74d9703f2795b4492022dfb044587b79e11e607d64f59457",
+      "size": 1494
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/api/topology.py",
-      "sha256": "6dc9ce1c9a0c32583e2ea23db7fbc35fe02ff2cf32b252f11ffbe2335f77f9b7",
-      "size": 5806
+      "sha256": "39567bcef4066df614bf40b77233570dfb2a43c19abd22e1a8039821f564d2c0",
+      "size": 9120
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/composition/__init__.py",
@@ -7592,13 +7657,13 @@
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/runtime/defaults.py",
-      "sha256": "1b2d409846c13f55867d669180f8a46060858833ae6a663081e602781f0477e7",
-      "size": 418
+      "sha256": "bf9f40f644e48dfa45c8d861bddca2d9c5da11415c45c64a2cb9438498be78c1",
+      "size": 872
     },
     {
       "path": "noetrium_platform/foundation/governance/system_registry/runtime/registry.py",
-      "sha256": "dbe716761c6d31fc8df349f88897183b5e51a1f62a3f1b8a342a6e2be643b249",
-      "size": 2891
+      "sha256": "39d9dad51ffc5d9f789cda86d1fb07c6af0faa130ad2373bf95d49d45a7c1261",
+      "size": 7204
     },
     {
       "path": "noetrium_platform/foundation/kernel/__init__.py",
@@ -7827,8 +7892,8 @@
     },
     {
       "path": "noetrium_platform/foundation/kernel/kernel/__init__.py",
-      "sha256": "5a8cbfd1048441254f3800103c2caa0e4e3984acfdf5283a1f7fa0d452f8f3c0",
-      "size": 1959
+      "sha256": "e814c5b3a617bce16def9abb59e79995e12a51dd3db1117321afe54f92ccf6fc",
+      "size": 2110
     },
     {
       "path": "noetrium_platform/foundation/kernel/kernel/auxiliary_failures.py",
@@ -7857,8 +7922,8 @@
     },
     {
       "path": "noetrium_platform/foundation/kernel/kernel/identity.py",
-      "sha256": "1642011ee23b0034060b81ccb9b628bed30418cbf0ea81e831dcee44c34d167c",
-      "size": 850
+      "sha256": "8629dd45280e83e3943589b3678cdf135a696de54c9fdaa777467ed0864a6c38",
+      "size": 2797
     },
     {
       "path": "noetrium_platform/foundation/kernel/kernel/json_value.py",
@@ -8612,13 +8677,13 @@
     },
     {
       "path": "noetrium_platform/infrastructure/lifecycle/api/contracts.py",
-      "sha256": "0a051923d5b567e13a855a047e6b85cfe196a756b30deed8246e82009d9402fc",
-      "size": 708
+      "sha256": "2783e4bf2bcd939d256c66341645a215ce22a7490425299f8c7856e0de1b7ace",
+      "size": 130
     },
     {
       "path": "noetrium_platform/infrastructure/lifecycle/api/ports.py",
-      "sha256": "d831a7f0f83d1951f930c5eaff99e752ae3471b1502d65c14663915822668155",
-      "size": 216
+      "sha256": "28a03c65002db831d8a17c6d527040fd037dddb5b476ce95cd44b0e4434792e2",
+      "size": 86
     },
     {
       "path": "noetrium_platform/infrastructure/lifecycle/composition/__init__.py",
@@ -8877,8 +8942,8 @@
     },
     {
       "path": "noetrium_platform/infrastructure/lifecycle/runtime/service.py",
-      "sha256": "17f6728476fd1efb3a94df9976f864d15a61015d18bca2ceff84becba0b869f3",
-      "size": 353
+      "sha256": "6e07d67d16f5fe66824a4663c0ee746aeea34ea5521e06d7dc5a582fdc585bf6",
+      "size": 69
     },
     {
       "path": "noetrium_platform/infrastructure/lifecycle/server/__init__.py",
@@ -12837,8 +12902,8 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/study/__init__.py",
-      "sha256": "a5064d50d32e4c01f1f34ce2c49dc88ca4ee558a270631f0ee2dda4933c4b22f",
-      "size": 1197
+      "sha256": "44a96c15278f4d47e2c0eb7a8ebdf544fcb1464b92c40e45bb2a27bdf712cd78",
+      "size": 1335
     },
     {
       "path": "noetrium_platform/research/experimentation/study/spec.py",
@@ -12847,8 +12912,8 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/__init__.py",
-      "sha256": "ad23ab578ca8a654ca4a7a218f82bef020ef18eb6d9b3acee4d7749713f9c7f7",
-      "size": 3154
+      "sha256": "a46bfd0740272993445e40da9efdf0bc4d5f91aab51b6bcce4a204a8d36577aa",
+      "size": 2907
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/analysis.py",
@@ -12867,8 +12932,8 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/contracts.py",
-      "sha256": "c06dae08221b3a63964913903673f6beeedf1915ed8174468d614fd1302dfe1a",
-      "size": 14654
+      "sha256": "926c045928447a289e344e2b2884e8288e1bc8107c35f1aaa9a2c3becf35b42a",
+      "size": 14802
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/design.py",
@@ -12887,8 +12952,8 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/ports.py",
-      "sha256": "04807398b63fb4a8490a33b0b85d0defb8dcf518e1d9c15bd82134af6e719c18",
-      "size": 2451
+      "sha256": "b4e0084c2addc3780b97a364e3cd05fe81dd295783843db70e6cfeb4f26417a8",
+      "size": 3037
     },
     {
       "path": "noetrium_platform/research/experimentation/study/api/research_read.py",
@@ -12927,8 +12992,8 @@
     },
     {
       "path": "noetrium_platform/research/experimentation/study/runtime/matrix.py",
-      "sha256": "2e43533526e1238bffd0ffbf54ce84ce47b3e7369fa55d98642415a22d52d5bf",
-      "size": 9508
+      "sha256": "596d5ab1e7bd97d5fc316af64ce07f1a4312234293bb15dec3aa7ef6225e4942",
+      "size": 15293
     },
     {
       "path": "noetrium_platform/research/experimentation/study/runtime/protocol.py",
@@ -12986,6 +13051,61 @@
       "size": 658
     },
     {
+      "path": "noetrium_platform/research/experimentation/workbench/__init__.py",
+      "sha256": "d0fd69e8a0b2dc2e2dffe25b8eaa1431f18356fa5b8107ac125b5de40ecb98c4",
+      "size": 1786
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/api/__init__.py",
+      "sha256": "dfc1a026174811e6e2c8f2c8db910554120393481e5fef02648095d10e4dde62",
+      "size": 1442
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/api/adapters.py",
+      "sha256": "46a0ad1a8368c1655b73b94eb989c6ac53c8e31cb6858b2d7e846809dbf886fb",
+      "size": 4618
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
+      "sha256": "6b402926a744f4eac82dcc4b67215f68bcb573f4775658215ec6f1cf67cce067",
+      "size": 37166
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/providers/__init__.py",
+      "sha256": "22f0d52d481f6fd736584825380da43ed1bd771aac020be5a400daa2121481d1",
+      "size": 481
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/providers/pdf.py",
+      "sha256": "d9ad2498d279f87739b04d5869ffc213ac1a46fa6bdd9ae4f0f42f71ac2e2850",
+      "size": 9427
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/providers/publication.py",
+      "sha256": "9f4cebca5e6a621fc8df955182f5fb65fdff5cbb34762ea89ea55ce207a48330",
+      "size": 1106
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/providers/stdlib.py",
+      "sha256": "d4718643789ed92e34a52f8fd9c8d77501214463d190d089dfd415c44ffe6f4a",
+      "size": 23953
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/runtime/__init__.py",
+      "sha256": "0a57535139c7186ed712746ca051095291dc5496774b25aceec37d0a01cce8c5",
+      "size": 295
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/runtime/engine.py",
+      "sha256": "e7b038b1f570a67c6fadd4fb76d57f7ce5d756f2b4b835409ac61a7909181ce5",
+      "size": 45109
+    },
+    {
+      "path": "noetrium_platform/research/experimentation/workbench/runtime/plotting.py",
+      "sha256": "1b545bb636859271156231efecf1c70b86f75e369d623c19f31563c17e8595e9",
+      "size": 13116
+    },
+    {
       "path": "noetrium_platform/research/experimentation/workload/__init__.py",
       "sha256": "4336a10a0097b2f672e672bb65909179e1b5bc40aeb8c158c651d8a1d96d21d5",
       "size": 1273
@@ -13031,6 +13151,36 @@
       "size": 5903
     },
     {
+      "path": "orchestration/__init__.py",
+      "sha256": "9281e0d7cdc0cb3a7a3430b7eae09cdacc1e01d95dd4a59863146de905a59106",
+      "size": 168
+    },
+    {
+      "path": "orchestration/multi_agent/__init__.py",
+      "sha256": "9194272db1d08c0f86be5fcbaa18d1c8fde0d2f31d428fce1ccebb5821d001c8",
+      "size": 1206
+    },
+    {
+      "path": "orchestration/multi_agent/contracts.py",
+      "sha256": "8429169b7026b73802532882dbcdbe546f9e272db16bdebd965b07c38fcf7541",
+      "size": 12902
+    },
+    {
+      "path": "orchestration/multi_agent/journal.py",
+      "sha256": "eafec9030e821cbe5c5dc3456c90a3ade104058d58a7d4ccafbfb64991cbb554",
+      "size": 9604
+    },
+    {
+      "path": "orchestration/multi_agent/orchestration.py",
+      "sha256": "8d82f73e12770173b4e57e379c3e8f959729f46044f53efc8d581a9a05f14f12",
+      "size": 15576
+    },
+    {
+      "path": "orchestration/multi_agent/transport.py",
+      "sha256": "2bb1714b00db9dfedc3eb2204f281ad7397f25b9caac98eb916f3a12b569f81d",
+      "size": 2190
+    },
+    {
       "path": "scripts/architecture_gate.py",
       "sha256": "d7034ec61ff9602f8cb9e056183cb52518894e8517597fff013e785e66284770",
       "size": 277
@@ -13057,8 +13207,8 @@
     },
     {
       "path": "scripts/generate_release_evidence.py",
-      "sha256": "846d3d9665557aa9bee9ee7d7bc308bb1eec24268bf8110f537850913da93774",
-      "size": 4982
+      "sha256": "88700409381b282fdcd279fcf8836575117d4664267475e137045dbd00339b0e",
+      "size": 5423
     },
     {
       "path": "scripts/git_submit.py",
@@ -13112,8 +13262,8 @@
     },
     {
       "path": "scripts/public_contract_audit.py",
-      "sha256": "66e2084b2e9b0fdd0bb8f42d538ce236189ed8edc1b29e18d09b60538d6a57e6",
-      "size": 2387
+      "sha256": "848ef85de999dd2fec384df0d8b9074d2d872172668b8ded2b3f405d8c1e0ed3",
+      "size": 4072
     },
     {
       "path": "scripts/readme_i18n.py",
@@ -13237,8 +13387,8 @@
     },
     {
       "path": "scripts/verify_release_evidence.py",
-      "sha256": "46462f59145e2bd40be313cb0ab3514b3e8d9af7a023eadc2930606548f1091a",
-      "size": 2234
+      "sha256": "16ad13ebfa8795f81a8094f366aa7185e033880bf6f915f29fee81782c632587",
+      "size": 2750
     },
     {
       "path": "scripts/verify_release_package.py",
@@ -13252,8 +13402,8 @@
     },
     {
       "path": "tests/TEST_SYSTEM.json",
-      "sha256": "d9a3c63372495bcb0ea6eccca0aa70f726ab70d60da037a3de1af062914d28a9",
-      "size": 8453
+      "sha256": "c80d49565d011ddf6f9d6e1c9e78103417d15f083e22349559c36f200aae2f35",
+      "size": 8622
     },
     {
       "path": "tests/__init__.py",
@@ -13946,6 +14096,11 @@
       "size": 2063
     },
     {
+      "path": "tests/test_kernel_system_contract_v1.py",
+      "sha256": "3a2d32e1ed30a86032fd2b6065de56ebd45c958e08a41df5893a99bdc4100b9d",
+      "size": 1881
+    },
+    {
       "path": "tests/test_leaf_executable_boundaries_v1.py",
       "sha256": "254ba384d4cf946efe5a34061fa1cf32530e23c9dc8e146c1b923da96a4e45d0",
       "size": 1510
@@ -13977,8 +14132,8 @@
     },
     {
       "path": "tests/test_logging_system_interface_v1.py",
-      "sha256": "e3e176e8c1561604ba9e0730ba3383d1053fc63610e3aa33c3d58b8f2e77cbc6",
-      "size": 3647
+      "sha256": "409be5265c40408f726b335b7845996057062d9e88bfa99643a0b8e2344e4e0c",
+      "size": 4624
     },
     {
       "path": "tests/test_low_level_participant_api_v166.py",
@@ -14427,8 +14582,8 @@
     },
     {
       "path": "tests/test_public_api_imports.py",
-      "sha256": "6589a92190b11839ab7782eb4c2b0c120c0ad4ae558e9b07a459b931f27dd648",
-      "size": 1262
+      "sha256": "2542b621bfd29924516fb077bfad6237c7f2441fda31af45cbadec472b5b1ecb",
+      "size": 2170
     },
     {
       "path": "tests/test_public_checkpoint_composition_v1.py",
@@ -14519,6 +14674,11 @@
       "path": "tests/test_registered_public_api_facade_v205.py",
       "sha256": "ebc156008cb861943c25c2424b5ca7b4174525c233a5770076d30bb7d50f6324",
       "size": 315
+    },
+    {
+      "path": "tests/test_registry_observability_binding_v1.py",
+      "sha256": "627faaf8041bfd463b98e3c9c6764cfe08930149c5b2c75394e31389da8f9f10",
+      "size": 6645
     },
     {
       "path": "tests/test_release_authority_transaction_v1.py",
@@ -14639,6 +14799,11 @@
       "path": "tests/test_research_compiler_v1.py",
       "sha256": "76fbfdb6742caec2ce2ecafdf0f932b9e270a7a0068718a87e451a0b3689cb87",
       "size": 18558
+    },
+    {
+      "path": "tests/test_research_workbench_v1.py",
+      "sha256": "36861652781eecaf9a918b888c72e57d033f95b05f12b3a8658de846169b04e3",
+      "size": 20381
     },
     {
       "path": "tests/test_resource_endpoint_allocation_v1.py",
@@ -15077,8 +15242,8 @@
     },
     {
       "path": "tests/test_study_matrix_executor_v1.py",
-      "sha256": "5510c30f245dad5a6994693bfe3190ef87cfe951610a9e2daccf605d615e3956",
-      "size": 6595
+      "sha256": "92cf3dfbac9d53d6a0e701a74066579c42751ffb2d5e6bbff890c118576b52ad",
+      "size": 10779
     },
     {
       "path": "tests/test_study_operation_semantic_policy_v139.py",
@@ -15176,6 +15341,11 @@
       "size": 7931
     },
     {
+      "path": "tests/test_topology_evolution_v1.py",
+      "sha256": "4345c94000a0786141d25265b136cfdab942995b9518fa46c5a563963778b6ed",
+      "size": 17159
+    },
+    {
       "path": "tests/test_triage_plan_v92.py",
       "sha256": "b08d892e5499b097a881ec723fbfa6dd2367fc43a55c0a00f0270e5d0f7db878",
       "size": 2688
@@ -15207,8 +15377,8 @@
     },
     {
       "path": "tests/test_typed_common_agent_components_v1.py",
-      "sha256": "02b9ce113bf0a3521d8882bda2e1dc15eee075c52fd108123cf27c51f29ccb9e",
-      "size": 9530
+      "sha256": "3b6079e0110ffce9005975758b4d1e927478d5a9ac3c249318dc93160c1fb15f",
+      "size": 14698
     },
     {
       "path": "tests/test_typed_environment_provider_npe_v1.py",
@@ -15377,13 +15547,13 @@
     },
     {
       "path": "tests/test_vnext_system_blueprint.py",
-      "sha256": "e7e476b54e60f4928c2714bf0ec8111733063caf664bb35fcc2dc52e41a05198",
-      "size": 1780
+      "sha256": "3c5b733298c06939272ae9de73470c4ed8dd0c1494eb1f041939d423ad4931af",
+      "size": 1815
     },
     {
       "path": "tests/test_vnext_system_catalog.py",
-      "sha256": "ad0dd55482757102b30125b5581e694adbc54a19262e5ada560a2c61e97bc17e",
-      "size": 11189
+      "sha256": "bef92e4edcb8c6f8e0c0b41d431a85c5b4cf96645a5ebcea680eebac2ed8e3b2",
+      "size": 11320
     },
     {
       "path": "tests/test_vnext_system_tree.py",
@@ -15409,5 +15579,5 @@
   "platform_code_version": "0.44.0",
   "python_requires": ">=3.11",
   "schema_version": 1,
-  "source_tree_sha256": "ec5091baf532dab2c3cc422961fc6e4f2ceb34a10a06907671ded2fe6f3998ca"
+  "source_tree_sha256": "7c268056496e6f82d669c165f7dd0f492b8707c7902b465d9ae4ef6db4cf894d"
 }

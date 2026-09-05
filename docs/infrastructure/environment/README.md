@@ -24,6 +24,12 @@ Downstream projects should depend on:
 Projects must not import provider-private runtime state, Minecraft bridge internals, state-machine checkpoint codecs, or platform service locators.
 Provider-author tests should obtain the canonical execution context through `noetrium_platform.capabilities.environment.api.ExecutionContext`; downstream source must not import `noetrium_platform.foundation.kernel.kernel` directly. This is a public alias of the same Platform type, not a second context authority.
 
+## Embodied environment peer
+
+具身智能与 Minecraft 都是 Environment 的同级 provider family。具身侧可以接入真实机器人、仿真器、数据集回放、策略服务或硬件控制器，但这些细节只存在于 `environment.embodied` 的 composition/provider 边界。上层实验、运行控制、资源、指标和诊断只依赖下面的通用 EnvironmentProviderPort。
+
+具身事件通过 `RegistryBoundEmbodiedTrajectorySink` 进入统一 raw observation lake：原始字节、事件顺序、episode、sensor/action 维度、来源、状态、时间和拓扑身份均保留；指标和 benchmark 结果是可重算的下游投影。平台不把任何机器人 SDK、仿真器或 VLA 模型实现塞进核心。
+
 ## Provider shape
 
 An environment provider exposes only three things at the project boundary:

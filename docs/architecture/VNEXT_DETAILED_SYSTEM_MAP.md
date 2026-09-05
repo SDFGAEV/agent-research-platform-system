@@ -35,6 +35,7 @@ Data parent dependency contract: `data -> artifact, platform, scope`. Cross-quer
 ## Environment System
 
 - **binding** — `environment_binding` — owns: binding environment specs to scopes/runs/participants; must not own: artifact storage.
+- **embodied** — `embodied_environment` — owns: embodiment/episode/event contracts and provider-facing trajectory interaction; must not own: generic environment authority, experiment semantics, model serving, telemetry storage or vendor SDK internals.
 - **catalog** — `environment_catalog` — owns: environment catalog and versioned definitions; must not own: resource capacity.
 - **instance** — `environment_instance` — owns: environment instance identity, readiness and lifecycle; must not own: host supervision implementation.
 - **python** — `python_environment` — owns: Python runtime/interpreter environment contracts; must not own: generic process supervisor.

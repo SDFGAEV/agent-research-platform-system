@@ -171,7 +171,7 @@
     },
     {
       "id": "contracts",
-      "pattern": "^test_(?:agent_(?:capability_abi|observation_evidence_payload)|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*)",
+      "pattern": "^test_(?:agent_(?:capability_abi|observation_evidence_payload)|embodied_environment|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*)",
       "family": "typed-contracts"
     },
     {

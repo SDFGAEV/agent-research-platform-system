@@ -18,6 +18,7 @@ def build_default_raw_registry() -> RawObservationRegistry:
         RawObservationSchema("forensics.raw", "1", ("kind", "object_id"), R.SCIENTIFIC_DURABLE, "Operator/forensic linkage record that must remain joinable to authoritative evidence."),
         RawObservationSchema("method.raw", "1", ("method", "kind"), R.SCIENTIFIC_DURABLE, "Method-side observation, recall/evolution/materialization/adoption evidence metadata."),
         RawObservationSchema("environment.raw", "1", ("environment", "kind"), R.RUN_DURABLE, "Environment action/observation/effect metadata including exact object IDs."),
+        RawObservationSchema("embodied.trajectory.raw", "1", ("kind", "episode_id", "status"), R.SCIENTIFIC_DURABLE, "Lossless embodied episode, sensor, action and outcome records."),
         RawObservationSchema("study.raw", "1", ("kind", "status"), R.SCIENTIFIC_DURABLE, "Study/run/task lifecycle and comparability metadata."),
     )
     for schema in schemas:

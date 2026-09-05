@@ -4102,8 +4102,8 @@
     },
     {
       "path": "noetrium_platform/composition/platform_meta.py",
-      "sha256": "71e2b81f2948fc10ac2fec75e920ac886435d1cc2edc1580bd8db08fb4dfe27b",
-      "size": 6680
+      "sha256": "dc4eba5f8cbc8ff6a7500f721c15d0a3b69b188a03600425f57d4fbc9180134f",
+      "size": 6725
     },
     {
       "path": "noetrium_platform/composition/prompt_registry.py",
@@ -8267,18 +8267,18 @@
     },
     {
       "path": "noetrium_platform/foundation/portfolio/providers/__init__.py",
-      "sha256": "0e03edea860df48495a87f42d256110f21720e8182873070460989177cd3f31e",
-      "size": 43
+      "sha256": "a5077728713d4828555cc665b4375ed3b102de2bfb61c7de907004a673fbfbab",
+      "size": 80
     },
     {
       "path": "noetrium_platform/foundation/portfolio/runtime/__init__.py",
-      "sha256": "548e38b7d34ccb667fef506722e42c6852b1e6bf017006fb626a9b525afe99f1",
-      "size": 161
+      "sha256": "c8f6da16618747b7ae6372979ced129e4fee41e13954f39b7fc28ba987e0f183",
+      "size": 210
     },
     {
       "path": "noetrium_platform/foundation/portfolio/runtime/catalog.py",
-      "sha256": "21c2ebe79364c46a3f4a2926b26d50e2273ca9c333255aa18da10e1823ac3f82",
-      "size": 3465
+      "sha256": "da144664ec2dc99c32b0407d4daf9967d44554b615fb181ff23e3f600a7727a9",
+      "size": 11996
     },
     {
       "path": "noetrium_platform/foundation/portfolio/workspace/__init__.py",
@@ -13827,8 +13827,8 @@
     },
     {
       "path": "tests/test_durable_resource_authorities_v1.py",
-      "sha256": "6c1758d59b750a017da48f4e18222e4e748237f932a5f4388526e5c5041c198c",
-      "size": 4443
+      "sha256": "d9661460295c7c35d411dc222bc0201a4b952769facd1b25166beef83e2b9c70",
+      "size": 5726
     },
     {
       "path": "tests/test_durable_resource_directory_v1.py",
@@ -15579,5 +15579,5 @@
   "platform_code_version": "0.44.0",
   "python_requires": ">=3.11",
   "schema_version": 1,
-  "source_tree_sha256": "7c268056496e6f82d669c165f7dd0f492b8707c7902b465d9ae4ef6db4cf894d"
+  "source_tree_sha256": "eaaa26e77862b65ef27369c2dda7ed028f8aebecd17338984efba6ba4f7fc7d9"
 }

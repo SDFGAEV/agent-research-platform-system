@@ -15,7 +15,10 @@ from noetrium_platform.foundation.governance.evolution.runtime import RegistryDr
 from noetrium_platform.foundation.governance.system_registry.api import SystemRegistryPort
 from noetrium_platform.foundation.governance.system_registry.runtime import build_default_system_registry
 from noetrium_platform.foundation.portfolio.api import PortfolioCatalogPort
-from noetrium_platform.foundation.portfolio.runtime import InMemoryPortfolioCatalog
+from noetrium_platform.foundation.portfolio.runtime import (
+    InMemoryPortfolioCatalog,
+    SQLitePortfolioCatalog,
+)
 from noetrium_platform.infrastructure.resources.compute.api import ComputeInventoryPort, ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationPort
 from noetrium_platform.infrastructure.resources.allocation.providers import SocketEndpointProbe
@@ -119,7 +122,7 @@ def build_durable_platform_meta(root: str | Path) -> PlatformMetaAuthorities:
         evolution=evolution,
         scopes=scopes,
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
-        portfolio=InMemoryPortfolioCatalog(scopes),
+        portfolio=SQLitePortfolioCatalog(database, scopes),
         experimentation=InMemoryExperimentationCatalog(scopes),
         environments=ExecutionEnvironmentCatalog(scopes),
         artifacts=InMemoryArtifactRegistry(),

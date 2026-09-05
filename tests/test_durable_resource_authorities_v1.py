@@ -19,6 +19,14 @@ from noetrium_platform.infrastructure.resources.providers import SQLiteResourceL
 from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseConflict
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 from noetrium_platform.foundation.scope.providers import SQLiteScopeRegistry
+from noetrium_platform.foundation.portfolio.api import (
+    ProgramSpec,
+    ProjectIdentity,
+    ProjectManifest,
+    ProjectSpec,
+    ProjectToolProvenance,
+    WorkspaceSpec,
+)
 
 
 class _AvailableProbe:
@@ -85,3 +93,22 @@ class DurableResourceAuthoritiesTests(TestCase):
             second = build_durable_platform_meta(root)
             self.assertTrue(second.scopes.contains(workspace))
             self.assertEqual((root / "platform-meta.sqlite").is_file(), True)
+
+    def test_durable_portfolio_survives_rebuild_with_canonical_manifest(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = build_durable_platform_meta(root)
+            first.portfolio.register_workspace(WorkspaceSpec("workspace", "Workspace"))
+            first.portfolio.register_program(ProgramSpec("program", "workspace", "Program"))
+            manifest = ProjectManifest(
+                ProjectSpec(ProjectIdentity("project", "1.0.0"), "program", "Project"),
+                "template-1",
+                ProjectToolProvenance("tool", "1.0.0", "0" * 64),
+            )
+            first.portfolio.register_project(manifest)
+
+            second = build_durable_platform_meta(root)
+            self.assertEqual(second.portfolio.workspace("workspace").name, "Workspace")
+            self.assertEqual(second.portfolio.program("program").workspace_id, "workspace")
+            self.assertEqual(second.portfolio.project("project"), manifest)
+            self.assertEqual(second.portfolio.projects(program_id="program"), (manifest,))

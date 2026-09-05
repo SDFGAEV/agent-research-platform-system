@@ -13,16 +13,16 @@
   "performance_source_digest": "740506b19a8b0885e483b1c3713d32d867aa3299781fb20a9225b677a8c29abf",
   "platform_code_version": "0.44.0",
   "python_requires": ">=3.11",
-  "regression_plan_sha256": "3431eff05fc413b000112ae57c0a1aa19b45c45d1e96032f7c0df2af831c20ee",
+  "regression_plan_sha256": "5a3f5e2a7517b73e1b0abd1fd83f79393e36cf44826d3701d7eba277cd8b27ac",
   "regression_runtime_sha256": "cd5167e00e37f9dbbc9a0c5487ba9f073e3ac03d8306718a4c4f86e64149b51a",
   "regression_shard_count": 44,
   "regression_test_inventory_sha256": "5a4e11cf5cfe1b00b344771747258c5ea0b24244ede707fd3cbc874cdb7a1085",
-  "regression_tests_collected": 2716,
-  "regression_tests_passed": 2706,
+  "regression_tests_collected": 2717,
+  "regression_tests_passed": 2707,
   "regression_tests_skipped": 10,
   "release_file_count": 3115,
-  "release_manifest_digest": "f8fdc77c657aad2f60fae51505a4ab3abeac6780bedab3ecde4c603d39834a98",
+  "release_manifest_digest": "17ee8517e2db7399d0a3c332d4d16a44f3843046f53630f9f7d4dde285e54990",
   "schema_version": 5,
   "silent_failure_findings": 0,
-  "source_tree_sha256": "7c268056496e6f82d669c165f7dd0f492b8707c7902b465d9ae4ef6db4cf894d"
+  "source_tree_sha256": "eaaa26e77862b65ef27369c2dda7ed028f8aebecd17338984efba6ba4f7fc7d9"
 }

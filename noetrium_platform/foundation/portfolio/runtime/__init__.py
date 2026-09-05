@@ -1,2 +1,2 @@
-from .catalog import InMemoryPortfolioCatalog, PortfolioConflict, PortfolioNotFound
-__all__=["InMemoryPortfolioCatalog","PortfolioConflict","PortfolioNotFound"]
+from .catalog import InMemoryPortfolioCatalog, PortfolioConflict, PortfolioNotFound, SQLitePortfolioCatalog
+__all__=["InMemoryPortfolioCatalog","PortfolioConflict","PortfolioNotFound","SQLitePortfolioCatalog"]

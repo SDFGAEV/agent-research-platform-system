@@ -28,6 +28,20 @@ class _CatalogSemantics:
     components: tuple[str, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class TopologySourceAudit:
+    """Deterministic runtime evidence that the catalog owns the source topology."""
+
+    registered_packages: tuple[str, ...]
+    discovered_standard_packages: tuple[str, ...]
+    stale_registered_packages: tuple[str, ...]
+    unregistered_standard_packages: tuple[str, ...]
+
+    @property
+    def clean(self) -> bool:
+        return not self.stale_registered_packages and not self.unregistered_standard_packages
+
+
 def _string_tuple(value: object, *, field: str, key: str) -> tuple[str, ...]:
     if not isinstance(value, list) or not all(
         isinstance(item, str) and item.strip() for item in value
@@ -170,4 +184,44 @@ def system_catalog() -> tuple[SystemDescriptor, ...]:
     return SYSTEM_CATALOG
 
 
-__all__ = ["SYSTEM_CATALOG", "system_catalog"]
+def audit_system_topology_source(root: Path | None = None) -> TopologySourceAudit:
+    """Discover standard-shaped source packages and compare them with the catalog.
+
+    This is a runtime startup check, not a second declaration mechanism: the
+    catalog remains authoritative, while the source tree supplies automatic
+    discovery evidence for missing or stale ownership.
+    """
+
+    source_root = (Path(root) if root is not None else Path(__file__).resolve().parents[5]).resolve()
+    package_root = source_root / "noetrium_platform"
+    registered = tuple(sorted({descriptor.package_prefix for descriptor in SYSTEM_CATALOG}))
+    stale = tuple(
+        package
+        for package in registered
+        if not (source_root.joinpath(*package.split(".")) / "__init__.py").is_file()
+    )
+    discovered: list[str] = []
+    if package_root.is_dir():
+        for path in sorted(package_root.rglob("*")):
+            if not path.is_dir() or not (path / "__init__.py").is_file():
+                continue
+            relative = path.relative_to(package_root)
+            if any(part in STANDARD_SYSTEM_SHAPE for part in relative.parts):
+                continue
+            if all(
+                (path / plane).is_dir() and (path / plane / "__init__.py").is_file()
+                for plane in STANDARD_SYSTEM_SHAPE
+            ):
+                discovered.append("noetrium_platform." + ".".join(relative.parts))
+    discovered_tuple = tuple(discovered)
+    return TopologySourceAudit(
+        registered_packages=registered,
+        discovered_standard_packages=discovered_tuple,
+        stale_registered_packages=stale,
+        unregistered_standard_packages=tuple(
+            package for package in discovered_tuple if package not in registered
+        ),
+    )
+
+
+__all__ = ["SYSTEM_CATALOG", "TopologySourceAudit", "audit_system_topology_source", "system_catalog"]

@@ -6,7 +6,7 @@ from .contracts import (
     SystemRegistryChange,
 )
 from .ports import SystemRegistryObserver, SystemRegistryPort
-from .topology import SYSTEM_CATALOG, system_catalog
+from .topology import SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology_source, system_catalog
 
 __all__ = [
     "AuthorityDescriptor",
@@ -17,5 +17,7 @@ __all__ = [
     "SystemRegistryChange",
     "SystemRegistryObserver",
     "SystemRegistryPort",
+    "TopologySourceAudit",
+    "audit_system_topology_source",
     "system_catalog",
 ]

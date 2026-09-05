@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import sys
 
@@ -12,9 +13,9 @@ from noetrium_platform.foundation.governance.release.runtime.freeze_lock import 
 from noetrium_platform.foundation.governance.release.runtime.authority import ReleaseAuthorityMismatch, load_verified_release_authority
 
 
-def _verify_locked() -> int:
-    evidence_path = ROOT / RELEASE_EVIDENCE_FILENAME
-    manifest_path = ROOT / "RELEASE_MANIFEST.json"
+def _verify_locked(root: Path) -> int:
+    evidence_path = root / RELEASE_EVIDENCE_FILENAME
+    manifest_path = root / "RELEASE_MANIFEST.json"
     if not evidence_path.exists():
         print("RELEASE_EVIDENCE_VERIFY_FAIL missing RELEASE_EVIDENCE.json")
         return 1
@@ -22,14 +23,14 @@ def _verify_locked() -> int:
         print("RELEASE_EVIDENCE_VERIFY_FAIL missing RELEASE_MANIFEST.json")
         return 1
     try:
-        manifest, evidence, authority = load_verified_release_authority(ROOT)
+        manifest, evidence, authority = load_verified_release_authority(root)
     except ReleaseAuthorityMismatch as exc:
         print(f"RELEASE_EVIDENCE_VERIFY_FAIL {exc}")
         return 1
-    errors = list(verify_release_manifest(ROOT, manifest))
+    errors = list(verify_release_manifest(root, manifest))
     if evidence.release_manifest_digest != manifest.digest():
         errors.append("release evidence does not bind RELEASE_MANIFEST.json")
-    errors.extend(verify_release_evidence(ROOT, evidence, quality=build_release_quality_evidence(ROOT)))
+    errors.extend(verify_release_evidence(root, evidence, quality=build_release_quality_evidence(root)))
     for error in errors:
         print(f"RELEASE_EVIDENCE_VERIFY_FAIL {error}")
     if errors:
@@ -40,10 +41,24 @@ def _verify_locked() -> int:
     return 0
 
 
-def main() -> int:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Verify the persisted Noetrium release authority and evidence."
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=ROOT,
+        help="repository root to verify (default: the project containing this script)",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    root = _parse_args(argv).root.resolve()
     try:
-        with ReleaseFreezeLock(ROOT):
-            return _verify_locked()
+        with ReleaseFreezeLock(root):
+            return _verify_locked(root)
     except ReleaseFreezeBusy:
         print("RELEASE_EVIDENCE_VERIFY_FAIL another release freeze operation is already active")
         return 2

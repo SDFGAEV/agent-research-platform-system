@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 import sys
 
@@ -10,17 +11,6 @@ for entry in (str(SCRIPT_DIR), str(ROOT)):
         sys.path.insert(0, entry)
 
 from check_readme_i18n import validate_root as validate_readme_i18n
-
-
-if __name__ == "__main__":
-    _readme_errors = validate_readme_i18n(ROOT)
-    if _readme_errors:
-        print("RELEASE_EVIDENCE_FAIL: multilingual README gate failed")
-        for _error in _readme_errors:
-            print(f"README_I18N: {_error}")
-        raise SystemExit(1)
-    print("README_I18N_RELEASE_GATE_PASS")
-
 from noetrium_platform.research.execution.admission.api import AdmissionBudget
 
 from noetrium_platform.foundation.governance.release.api import ReleaseRegressionEvidence
@@ -59,7 +49,7 @@ class _PytestReleaseRegressionProvider:
         )
 
 
-def _generate_locked() -> int:
+def _generate_locked(root: Path) -> int:
     workers = max(4, min(8, int(__import__("os").cpu_count() or 1)))
     runtime = build_execution_concurrency_runtime(
         concurrency_budget=ConcurrencyBudget(
@@ -84,16 +74,16 @@ def _generate_locked() -> int:
         task_group=coordinator_group,
     )
     try:
-        result = coordinator.generate(ROOT)
+        result = coordinator.generate(root)
     except RuntimeError as exc:
         print(f"RELEASE_EVIDENCE_FAIL: {exc}")
         return 1
     finally:
         runtime.close()
 
-    receipt = publish_release_authority(ROOT, result.manifest, result.evidence)
-    path = ROOT / RELEASE_EVIDENCE_FILENAME
-    print(f"RELEASE_MANIFEST={ROOT / 'RELEASE_MANIFEST.json'}")
+    receipt = publish_release_authority(root, result.manifest, result.evidence)
+    path = root / RELEASE_EVIDENCE_FILENAME
+    print(f"RELEASE_MANIFEST={root / 'RELEASE_MANIFEST.json'}")
     print(f"RELEASE_MANIFEST_SHA256={result.manifest.digest()}")
     print(f"RELEASE_EVIDENCE={path}")
     print(f"EVIDENCE_SHA256={result.evidence.digest()}")
@@ -106,10 +96,31 @@ def _generate_locked() -> int:
     return 0
 
 
-def main() -> int:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate and publish fail-closed Noetrium release evidence."
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=ROOT,
+        help="repository root to verify (default: the project containing this script)",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    root = _parse_args(argv).root.resolve()
+    _readme_errors = validate_readme_i18n(root)
+    if _readme_errors:
+        print("RELEASE_EVIDENCE_FAIL: multilingual README gate failed")
+        for _error in _readme_errors:
+            print(f"README_I18N: {_error}")
+        return 1
+    print("README_I18N_RELEASE_GATE_PASS")
     try:
-        with ReleaseFreezeLock(ROOT):
-            return _generate_locked()
+        with ReleaseFreezeLock(root):
+            return _generate_locked(root)
     except ReleaseFreezeBusy:
         print("RELEASE_EVIDENCE_FAIL: another release freeze operation is already active")
         return 2

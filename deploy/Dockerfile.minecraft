@@ -27,6 +27,8 @@ RUN cd /tmp \
 
 WORKDIR /opt/noetrium
 COPY pyproject.toml README.md ./
+COPY components ./components
+COPY orchestration ./orchestration
 COPY noetrium ./noetrium
 COPY noetrium_platform ./noetrium_platform
 COPY scripts ./scripts

@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from .contracts import SystemIdentity, SystemPort, SystemSpec
+from .contracts import (
+    EnvironmentAssignmentIdentity,
+    EnvironmentAssignmentIsolationPort,
+    EnvironmentAssignmentIsolationReceipt,
+    SystemIdentity,
+    SystemPort,
+    SystemSpec,
+)
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.foundation.kernel.kernel.operation import EffectClass, EffectCertainty, EffectReceipt
 from .conformance import (
@@ -86,6 +93,9 @@ __all__ = [
     "ActionReconciliationDisposition", "ActionReconciliationResult",
     "ActionRequest", "ActionResult", "ActionSafetyCapabilityMissing",
     "ActionScientificCommitContradiction", "ActionSemanticIdentity",
+    "EnvironmentAssignmentIdentity",
+    "EnvironmentAssignmentIsolationPort",
+    "EnvironmentAssignmentIsolationReceipt",
     "EnvironmentCapabilityUnsupported", "EnvironmentCapability",
     "EnvironmentConformanceProbe", "EnvironmentProviderConformanceReceipt",
     "verify_environment_provider_conformance",

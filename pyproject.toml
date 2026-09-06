@@ -15,12 +15,12 @@ requires-python = ">=3.11"
 [project.urls]
 Homepage = "https://github.com/Xalzeroph/noetrium"
 Repository = "https://github.com/Xalzeroph/noetrium"
-Documentation = "https://github.com/Xalzeroph/noetrium/tree/master/docs"
-Examples = "https://github.com/Xalzeroph/noetrium/tree/master/examples"
+Documentation = "https://github.com/Xalzeroph/Noetrium/tree/main/docs"
+Examples = "https://github.com/Xalzeroph/Noetrium/tree/main/examples"
 Discussions = "https://github.com/Xalzeroph/noetrium/discussions"
 Security = "https://github.com/Xalzeroph/noetrium/security/policy"
-Contributing = "https://github.com/Xalzeroph/noetrium/blob/master/CONTRIBUTING.md"
-Citation = "https://github.com/Xalzeroph/noetrium/blob/master/CITATION.cff"
+Contributing = "https://github.com/Xalzeroph/Noetrium/blob/main/CONTRIBUTING.md"
+Citation = "https://github.com/Xalzeroph/Noetrium/blob/main/CITATION.cff"
 Issues = "https://github.com/Xalzeroph/noetrium/issues"
 
 [project.optional-dependencies]

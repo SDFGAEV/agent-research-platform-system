@@ -19,5 +19,10 @@ class EnvironmentCategoryCatalogPort(Protocol):
         self, category_id: EnvironmentCategoryId
     ) -> tuple[EnvironmentImplementationDescriptor, ...]: ...
 
+    def implementation(self, implementation_id: str) -> EnvironmentImplementationDescriptor: ...
+
+    @property
+    def catalog_digest(self) -> str: ...
+
 
 __all__ = ["EnvironmentCategoryCatalogPort"]

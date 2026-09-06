@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.environment.api import (
-    ActionRequest, ActionResult, Observation, ExecutionContext,
+    ActionRequest, ActionResult, EnvironmentSession, Observation, ExecutionContext,
 )
 from .contracts import TextWorldEnvironmentSpec
 
 
 @runtime_checkable
-class TextWorldPort(Protocol):
+class TextWorldPort(EnvironmentSession, Protocol):
     @property
     def spec(self) -> TextWorldEnvironmentSpec: ...
 

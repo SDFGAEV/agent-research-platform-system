@@ -49,3 +49,12 @@ registered as environment categories.
 Concrete benchmark names must not appear in category descriptors. A benchmark
 adapter receives a category provider plus a task case and remains owned by the
 research experimentation plane.
+
+## Implementation status
+
+The canonical catalog exposes every planned backend explicitly. The available
+status means Noetrium ships the provider composition; contract_only means the
+public category contract and provider seam are stable, but the external backend
+must be supplied by a downstream project. Consumers must query implementation
+status before attempting to open a provider; an unknown implementation ID is an
+error, not an implicit fallback.

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json, thaw_json
@@ -22,7 +22,7 @@ class GuiEnvironmentSpec:
     viewport: tuple[int, int] = (0, 0)
     supports_accessibility: bool = False
     supported_actions: tuple[GuiActionKind, ...] = ()
-    metadata: dict[str, JsonValue] = None
+    metadata: dict[str, JsonValue] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.environment_id.strip() or not self.revision.strip():
@@ -33,6 +33,8 @@ class GuiEnvironmentSpec:
             raise TypeError("GUI accessibility flag must be boolean")
         if any(not isinstance(item, GuiActionKind) for item in self.supported_actions):
             raise TypeError("GUI actions must use GuiActionKind")
+        if len(self.supported_actions) != len(set(self.supported_actions)):
+            raise ValueError("GUI actions must be unique")
         object.__setattr__(self, "metadata", freeze_json(self.metadata or {}))
 
     @property

@@ -2,6 +2,13 @@
 
 The examples in this directory are small, deterministic entry points into public Noetrium contracts. They intentionally avoid private test helpers, hidden state, API keys, and machine-specific infrastructure.
 
+## Quickstart: inspect the environment catalog
+
+Run `python -m examples.quickstart_environment_catalog` to enumerate the six
+canonical environment families and inspect each implementation's explicit
+available/contract_only status. Benchmark, replay, synthetic, tool and
+multi-agent concepts are shown only as exclusions; they are not catalog entries.
+
 ## Quickstart: compile a reproducible experiment plan
 
 Run:

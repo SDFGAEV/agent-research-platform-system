@@ -197,6 +197,13 @@ from .project import (
     project_manifest_identity_facets,
 )
 from .participant import (
+    MethodIdentity,
+    MethodProgramIdentity,
+    MethodSnapshot,
+    MethodTaskCompletionReceipt,
+    MethodTaskOutcome,
+    RecallRequest,
+    RecallResult,
     AgentProjectDefinition,
     MethodProjectDefinition,
     ParticipantBindingDiagnostic,
@@ -300,6 +307,9 @@ __all__ = [
     "decode_project_manifest_bytes", "decode_project_manifest_document",
     "diff_project_manifest_facets", "encode_project_manifest",
     "project_manifest_document", "project_manifest_identity_facets",
+    "MethodIdentity", "MethodProgramIdentity", "MethodSnapshot",
+    "MethodTaskCompletionReceipt", "MethodTaskOutcome", "RecallRequest",
+    "RecallResult",
     "AgentProjectDefinition", "MethodProjectDefinition",
     "ParticipantBindingDiagnostic", "ParticipantBindingDiagnosticCode",
     "ParticipantBindingDiagnosticSeverity", "ParticipantProjectBindingError",

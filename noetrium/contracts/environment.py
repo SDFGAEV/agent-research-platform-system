@@ -3,6 +3,9 @@
 from noetrium_platform.capabilities.environment.api import (
     ActionRequest,
     ActionResult,
+    EnvironmentAssignmentIdentity,
+    EnvironmentAssignmentIsolationPort,
+    EnvironmentAssignmentIsolationReceipt,
     EnvironmentCapability,
     EnvironmentCapabilityUnsupported,
     EnvironmentDiagnosticsPort,
@@ -17,7 +20,11 @@ from noetrium_platform.capabilities.environment.api import (
 )
 
 __all__ = [
-    "ActionRequest", "ActionResult", "EnvironmentCapability",
+    "ActionRequest", "ActionResult",
+    "EnvironmentAssignmentIdentity",
+    "EnvironmentAssignmentIsolationPort",
+    "EnvironmentAssignmentIsolationReceipt",
+    "EnvironmentCapability",
     "EnvironmentCapabilityUnsupported", "EnvironmentDiagnosticsPort",
     "EnvironmentIdentity", "EnvironmentImplementation",
     "EnvironmentProviderCapabilities", "EnvironmentProviderPort",

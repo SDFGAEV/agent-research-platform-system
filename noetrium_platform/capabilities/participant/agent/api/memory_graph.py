@@ -80,6 +80,12 @@ class MemoryGraphSnapshot:
         node_ids = {node.node_id for node in self.nodes}
         if len(node_ids) != len(self.nodes):
             raise ValueError("memory graph node ids must be unique")
+        if any(
+            parent_id not in node_ids
+            for node in self.nodes
+            for parent_id in node.parent_ids
+        ):
+            raise ValueError("memory graph node parent is missing")
         edge_keys = {(edge.source_id, edge.target_id, edge.relation) for edge in self.edges}
         if len(edge_keys) != len(self.edges):
             raise ValueError("memory graph edges must be unique")

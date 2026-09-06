@@ -2,6 +2,10 @@
 
 from .participant_runtime import MinecraftParticipantRuntimeAdapter, compose_minecraft_participant_endpoint
 from .environment import MinecraftEnvironmentAssembly, compose_minecraft_environment
+from .assignment_isolation import (
+    MinecraftBranchAssignmentIsolation,
+    MinecraftBranchAssignmentIsolationFactory,
+)
 from .branch_runtime import (
     MinecraftBranchCheckpointFactoryPort,
     MinecraftBranchEnvironmentFactoryPort,
@@ -65,6 +69,8 @@ __all__ = [
     "MinecraftBranchRuntimeBinding",
     "MinecraftBranchRuntimeError",
     "MinecraftBranchRuntimeFactory",
+    "MinecraftBranchAssignmentIsolation",
+    "MinecraftBranchAssignmentIsolationFactory",
     "MinecraftServerServiceController",
     "MinecraftServerServiceError",
     "MinecraftServerServiceFactory",

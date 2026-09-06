@@ -11,6 +11,7 @@ from .conversation import AgentConversationManager, ConversationKind, Conversati
 from .coordination import AgentCoordinationHub, AgentPeerStatus
 from .cognition_loop import AgentCognitionLoop
 from .memory import AgentMemoryRecord, InMemoryAgentMemory, MemoryPlane
+from .memory_graph import MemoryGraphConflict, MemoryGraphIntegrityError, VersionedMemoryGraph
 from .modes import ReactiveModeController, ReactiveModeSpec
 from .prompt import AgentPromptAssembler, CompiledAgentPrompt, PromptBlock
 from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
@@ -41,6 +42,9 @@ __all__ = [
     "InMemoryAgentMemory",
     "InMemorySkillLibrary",
     "MemoryPlane",
+    "MemoryGraphConflict",
+    "MemoryGraphIntegrityError",
+    "VersionedMemoryGraph",
     "AgentSubgoal",
     "GoalStatus",
     "PromptBlock",

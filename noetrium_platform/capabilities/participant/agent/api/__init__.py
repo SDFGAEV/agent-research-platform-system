@@ -37,6 +37,15 @@ from .memory_checkpoint import (
     AgentMemoryCheckpoint,
     AgentMemoryCheckpointRecord,
 )
+from .memory_graph import (
+    MemoryEdgeRecord,
+    MemoryGraphLedgerEntry,
+    MemoryGraphOperation,
+    MemoryGraphPort,
+    MemoryGraphSnapshot,
+    MemoryGraphTransaction,
+    MemoryNodeRecord,
+)
 from .skill_checkpoint import (
     AGENT_SKILL_LIBRARY_CHECKPOINT_SCHEMA,
     AgentSkillLibraryCheckpoint,
@@ -85,6 +94,13 @@ __all__ = [
     "AgentMemoryContext",
     "AgentMemoryCheckpoint",
     "AgentMemoryCheckpointRecord",
+    "MemoryEdgeRecord",
+    "MemoryGraphLedgerEntry",
+    "MemoryGraphOperation",
+    "MemoryGraphPort",
+    "MemoryGraphSnapshot",
+    "MemoryGraphTransaction",
+    "MemoryNodeRecord",
     "AgentModeDecision",
     "AgentModeDisposition",
     "AgentMemoryPort",

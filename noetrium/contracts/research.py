@@ -18,6 +18,8 @@ from noetrium_platform.research.experimentation.run.api import (
     RunArtifactSnapshotReceipt,
 )
 from noetrium_platform.research.experimentation.study.api import (
+    BenchmarkTaskSet,
+    TaskDefinition,
     BoundStudyUnitExecutionPort,
     BoundStudyVariantExecutionPort,
     ExperimentPlan,
@@ -105,6 +107,7 @@ __all__ = [
     "RunScientificValidity", "RunTaskOutcome", "DerivedEvidenceArtifact",
     "EvidenceBundleManifest", "EvidenceBundleReceipt", "EvidenceBundleStatus",
     "EvidenceStreamDescriptor",
+    "BenchmarkTaskSet", "TaskDefinition",
     "BoundStudyUnitExecutionPort", "BoundStudyVariantExecutionPort", "ExperimentPlan",
     "StudyAssignment", "StudyConcurrencyPolicy", "StudyExecutionUnit",
     "StudyMatrixExecutionReport", "StudyMetricAggregate", "StudyMetricObservation",

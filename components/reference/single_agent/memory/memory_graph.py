@@ -4,10 +4,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest
+from noetrium.contracts.json import JsonValue, canonical_digest
 
 
-_GRAPH_SCHEMA = "agent-memory-graph.v1"
+_GRAPH_SCHEMA = "memory-graph.v1"
 
 
 def _text(value: object, field: str) -> str:

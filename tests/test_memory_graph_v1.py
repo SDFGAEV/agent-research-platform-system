@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.capabilities.participant.agent.api.memory_graph import (
-    MemoryGraphOperation,
-    MemoryNodeRecord,
-)
-from noetrium_platform.capabilities.participant.agent.runtime.memory_graph import (
+from components.reference.single_agent.memory import (
     MemoryGraphConflict,
     MemoryGraphIntegrityError,
+    MemoryGraphOperation,
+    MemoryNodeRecord,
     VersionedMemoryGraph,
 )
 
@@ -105,7 +103,7 @@ def test_memory_graph_restore_revalidates_snapshot() -> None:
 class MemoryGraphSnapshotForTest:
     @staticmethod
     def snapshot():
-        from noetrium_platform.capabilities.participant.agent.api.memory_graph import (
+        from components.reference.single_agent.memory import (
             MemoryEdgeRecord,
             MemoryGraphSnapshot,
         )

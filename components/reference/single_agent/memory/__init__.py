@@ -6,6 +6,20 @@ from .stores import (
     VectorMemoryStore,
     WorkingMemory,
 )
+from .memory_graph import (
+    MemoryEdgeRecord,
+    MemoryGraphLedgerEntry,
+    MemoryGraphOperation,
+    MemoryGraphPort,
+    MemoryGraphSnapshot,
+    MemoryGraphTransaction,
+    MemoryNodeRecord,
+)
+from .versioned_memory_graph import (
+    MemoryGraphConflict,
+    MemoryGraphIntegrityError,
+    VersionedMemoryGraph,
+)
 
 __all__ = [
     "EpisodicMemoryStore",
@@ -15,4 +29,14 @@ __all__ = [
     "MemoryItem",
     "VectorMemoryStore",
     "WorkingMemory",
+    "MemoryEdgeRecord",
+    "MemoryGraphLedgerEntry",
+    "MemoryGraphOperation",
+    "MemoryGraphPort",
+    "MemoryGraphSnapshot",
+    "MemoryGraphTransaction",
+    "MemoryNodeRecord",
+    "MemoryGraphConflict",
+    "MemoryGraphIntegrityError",
+    "VersionedMemoryGraph",
 ]

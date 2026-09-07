@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.contracts.json import canonical_digest
 
-from ..api.memory_graph import (
+from .memory_graph import (
     MemoryEdgeRecord,
     MemoryGraphLedgerEntry,
     MemoryGraphOperation,

@@ -5,6 +5,8 @@ Noetrium is intentionally split into three dependency tiers:
 1. noetrium_platform/ is the infrastructure and authority tier. It owns
    identity, bindings, execution, recovery, measurements, artifacts, evidence,
    and typed producer ports.
+   The reusable memory component layer owns working, episodic, vector and
+   versioned graph memory substrates; it does not own paper-specific semantics.
 2. components/reference/single_agent/agent, components/reference/single_agent/memory, and components/reference/single_agent/tools are reusable
    single-agent method components. They depend on public Platform contracts
    only. A downstream paper can import ReferenceReActMethod, ReferenceReflexionMethod, ReferencePlanAndSolveMethod,
